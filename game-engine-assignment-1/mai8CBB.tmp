@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://0l0wxajejgbb"]
+[gd_scene load_steps=7 format=3 uid="uid://0l0wxajejgbb"]
 
 [ext_resource type="Texture2D" uid="uid://cmx5ohkk7c42c" path="res://icon.svg" id="1_afxxd"]
 [ext_resource type="Texture2D" uid="uid://b7cbkj47j40xi" path="res://assets/blocks/Block1.svg" id="1_c5ufv"]
@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://bxj6vde78p8de" path="res://assets/blocks/Block3.svg" id="3_o6key"]
 [ext_resource type="Texture2D" uid="uid://bm0yi4krqx0ty" path="res://assets/blocks/Block4.svg" id="4_mqb30"]
 [ext_resource type="Script" path="res://Scripts/player.gd" id="5_wl8nh"]
-[ext_resource type="PackedScene" uid="uid://bfiqh8cbg0k3s" path="res://auto_mover.tscn" id="7_bjmq5"]
 
 [node name="Main" type="Node2D"]
 
@@ -36,8 +35,3 @@ scale = Vector2(0.273438, 0.262044)
 texture = ExtResource("1_afxxd")
 
 [node name="NextBlockDisplay" type="Sprite2D" parent="."]
-position = Vector2(983, 61)
-texture = ExtResource("4_mqb30")
-
-[node name="AutoMover" parent="." instance=ExtResource("7_bjmq5")]
-position = Vector2(6, 429)
