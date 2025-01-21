@@ -15,30 +15,6 @@ This is a Godot 4 project demonstrating:
 
 2. File/Folder Structure
 
-
-ProjectRoot
-├─ assets/
-│  └─ blocks/
-│      ├─ Block1.svg
-│      ├─ Block2.svg
-│      ├─ Block3.svg
-│      └─ Block4.svg
-├─ Scripts/
-│  ├─ player.gd
-│  ├─ blockdrop.gd
-│  ├─ AutoMover.gd
-│  └─ BlockDrop.tscn          # Scene for the falling block
-├─ Cpp/
-│  ├─ keyinput.cpp
-│  ├─ keyinput.h
-│  ├─ modifyspeed.cpp
-│  ├─ modifyspeed.h
-│  ├─ register_types.cpp
-│  └─ ...
-├─ Main.tscn                  # Main scene
-├─ project.godot              # Godot project file
-└─ README.md                  # This file
-
 Key GDScript Files
 
     player.gd
