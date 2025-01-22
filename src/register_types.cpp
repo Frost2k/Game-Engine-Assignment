@@ -2,6 +2,7 @@
 
 #include "keyinput.h"
 #include "modifyspeed.h"
+#include "automover.h"
 
 #include "gdexample.h"
 
@@ -19,6 +20,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(GDExample);
     GDREGISTER_CLASS(KeyInput);
 	GDREGISTER_CLASS(ModifySpeed);
+	GDREGISTER_CLASS(AutoMover);
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

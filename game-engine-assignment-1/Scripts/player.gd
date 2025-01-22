@@ -1,6 +1,5 @@
 extends Node2D
 
-var speed: float = 200.0
 var block_paths := [
 	"res://assets/blocks/Block1.svg",
 	"res://assets/blocks/Block2.svg",
@@ -9,79 +8,55 @@ var block_paths := [
 ]
 
 var space_was_pressed: bool = false
-
-# This is our "next" block index (which texture we'll spawn next)
 var next_block_index: int = 0
 
 @onready var next_block_display: Sprite2D = $"/root/Main/NextBlockDisplay"
 
-
 func _ready() -> void:
 	randomize()
-	
-	# Place player near bottom
-	var view_rect = get_viewport_rect()
-	position = Vector2(view_rect.size.x / 2, view_rect.size.y - 50)
-	
-	# Pick an initial "next block" to show
 	next_block_index = randi() % block_paths.size()
 	update_next_block_display()
 
 func _process(delta: float) -> void:
-	handle_movement(delta)
 	handle_spawning()
 
-func handle_movement(delta: float) -> void:
-	var dir = Vector2.ZERO
-
-	if Input.is_physical_key_pressed(KEY_LEFT):
-		dir.x -= 1
-	if Input.is_physical_key_pressed(KEY_RIGHT):
-		dir.x += 1
-
-	translate(dir.normalized() * speed * delta)
-
-	# Optional clamp to screen
-	var view_rect = get_viewport_rect()
-	var half_width = 32.0
-	position.x = clamp(position.x, half_width, view_rect.size.x - half_width)
-	position.y = view_rect.size.y - 50
-
 func handle_spawning() -> void:
+	# Raw check for space bar 
 	var space_pressed = Input.is_physical_key_pressed(KEY_SPACE)
+	# "just pressed" logic
 	if space_pressed and not space_was_pressed:
 		spawn_block_above_player()
 	space_was_pressed = space_pressed
 
 func spawn_block_above_player() -> void:
-	# 1) Load the scene
+	# 1) Load the block scene (or create a new sprite if desired)
 	var block_scene: PackedScene = load("res://block_drop.tscn") as PackedScene
 	var block_root = block_scene.instantiate()
 
-	# 2) Add it to the scene
+	# 2) Add to the scene
 	get_tree().get_current_scene().add_child(block_root)
 
-	# 3) Get child Sprite2D to assign the texture
+	# 3) Optionally pick a random texture from block_paths
 	var sprite_node = block_root.get_node("Sprite2D") as Sprite2D
 	if sprite_node:
-		# Pick a random block texture from the array
 		var random_index = randi() % block_paths.size()
 		var random_path = block_paths[random_index]
 		sprite_node.texture = load(random_path)
 
-	# 4) Position above the player
-	block_root.global_position = global_position - Vector2(0, 500)
+	# 4) Position the block above the "player" node
+	#    If your player node is a sibling, do: get_node("../Player").global_position
+	#    Or store a reference to the player if needed
+	var player = get_node("/root/Main/PlayerNode/KeyInput") # adjust path
+	if player:
+		block_root.global_position = player.global_position - Vector2(0, 150)
 
-	# Print debugging info
-	print("Spawned block at", block_root.global_position, "using sprite node:", sprite_node)
+	print("Spawned block at", block_root.global_position, "with random texture")
 
-	# Update the next block
+	# Update the "next block" display
 	next_block_index = randi() % block_paths.size()
 	update_next_block_display()
 
-
 func update_next_block_display() -> void:
-	# Loads the texture corresponding to 'next_block_index'
 	var tex_path = block_paths[next_block_index]
 	var tex = load(tex_path)
 	if next_block_display and tex:

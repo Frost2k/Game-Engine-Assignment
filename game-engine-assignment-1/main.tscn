@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://0l0wxajejgbb"]
+[gd_scene load_steps=9 format=3 uid="uid://0l0wxajejgbb"]
 
 [ext_resource type="Texture2D" uid="uid://cmx5ohkk7c42c" path="res://icon.svg" id="1_afxxd"]
 [ext_resource type="Texture2D" uid="uid://b7cbkj47j40xi" path="res://assets/blocks/Block1.svg" id="1_c5ufv"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bm0yi4krqx0ty" path="res://assets/blocks/Block4.svg" id="4_mqb30"]
 [ext_resource type="Script" path="res://Scripts/player.gd" id="5_wl8nh"]
 [ext_resource type="PackedScene" uid="uid://bfiqh8cbg0k3s" path="res://auto_mover.tscn" id="7_bjmq5"]
+[ext_resource type="AudioStream" uid="uid://o0k43xgyhdej" path="res://audio/campaign_1.mp3" id="8_fpylv"]
 
 [node name="Main" type="Node2D"]
 
@@ -27,11 +28,15 @@ position = Vector2(-108, -49)
 texture = ExtResource("4_mqb30")
 
 [node name="PlayerNode" type="Node2D" parent="."]
-position = Vector2(351, 502)
+position = Vector2(392, 481)
 script = ExtResource("5_wl8nh")
 
-[node name="Sprite2D" type="Sprite2D" parent="PlayerNode"]
-position = Vector2(41.5, -18.7708)
+[node name="KeyInput" type="KeyInput" parent="PlayerNode"]
+position = Vector2(2, -1)
+scale = Vector2(1, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="PlayerNode/KeyInput"]
+position = Vector2(2, 0)
 scale = Vector2(0.273438, 0.262044)
 texture = ExtResource("1_afxxd")
 
@@ -41,3 +46,23 @@ texture = ExtResource("4_mqb30")
 
 [node name="AutoMover" parent="." instance=ExtResource("7_bjmq5")]
 position = Vector2(6, 429)
+
+[node name="WinLabel" type="Label" parent="."]
+visible = false
+offset_left = 533.0
+offset_top = 231.0
+offset_right = 670.0
+offset_bottom = 254.0
+text = "Press R to Restart"
+
+[node name="NextBlockLabel" type="Label" parent="."]
+offset_left = 868.0
+offset_top = 50.0
+offset_right = 1005.0
+offset_bottom = 73.0
+text = "Next Block
+"
+
+[node name="BGMusicPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_fpylv")
+autoplay = true

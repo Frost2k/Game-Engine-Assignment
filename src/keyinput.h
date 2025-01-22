@@ -26,11 +26,6 @@ namespace godot{
 		double get_speed() const;
 		void set_speed(const double p_speed);
 
-        // Moves the node horizontally
-        void move_player(double delta);
-
-        // Spawns a random block
-        void spawn_random_block();
 	};
 }
 
