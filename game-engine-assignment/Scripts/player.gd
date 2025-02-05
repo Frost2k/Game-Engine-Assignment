@@ -7,7 +7,7 @@ var player_alive = true
 
 var attack_ip = false
 
-const speed = 100
+var speed = 100
 var current_dir = "none"
 
 func _ready():
@@ -169,3 +169,4 @@ func _on_regin_timer_timeout() -> void:
 			health = 100
 	if health <= 0:
 		health = 0  
+		

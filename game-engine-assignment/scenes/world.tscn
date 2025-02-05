@@ -1,11 +1,12 @@
-[gd_scene load_steps=12 format=3 uid="uid://bu54qemvbxpc0"]
+[gd_scene load_steps=13 format=3 uid="uid://bu54qemvbxpc0"]
 
 [ext_resource type="Texture2D" uid="uid://ce0jms5pyn4o" path="res://assets/mystic_woods/tilesets/plains.png" id="1_6vi40"]
-[ext_resource type="Script" path="res://scenes/world.gd" id="1_58pw6"]
+[ext_resource type="Script" path="res://Scripts/world.gd" id="1_58pw6"]
 [ext_resource type="Texture2D" uid="uid://doa27akknmsw" path="res://assets/mystic_woods/tilesets/grass.png" id="2_6xh8i"]
 [ext_resource type="Texture2D" uid="uid://bbjunwr4fr5pa" path="res://assets/mystic_woods/objects/objects.png" id="3_kw5e6"]
 [ext_resource type="PackedScene" uid="uid://cp6438jqrjgy1" path="res://scenes/player.tscn" id="4_yauhn"]
 [ext_resource type="PackedScene" uid="uid://bmmiiib3a2u6t" path="res://scenes/enemy.tscn" id="5_pm4vw"]
+[ext_resource type="PackedScene" uid="uid://dsyg5l0uv7q1f" path="res://scenes/floating_item.tscn" id="7_nkxe7"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6a8tf"]
 texture = ExtResource("1_6vi40")
@@ -169,6 +170,18 @@ polygon = PackedVector2Array(0, 0, 173, 0, 173, -45, 230, -45, 230, 0, 416, 0, 4
 [node name="CollisionShape2D" type="CollisionShape2D" parent="cliffside_transistion_point"]
 position = Vector2(201.5, -22)
 shape = SubResource("RectangleShape2D_qp0qn")
+
+[node name="FloatingItem" parent="." instance=ExtResource("7_nkxe7")]
+position = Vector2(241, 51)
+
+[node name="FloatingItem2" parent="." instance=ExtResource("7_nkxe7")]
+position = Vector2(388, 112)
+
+[node name="FloatingItem3" parent="." instance=ExtResource("7_nkxe7")]
+position = Vector2(116, 45)
+
+[node name="FloatingItem4" parent="." instance=ExtResource("7_nkxe7")]
+position = Vector2(163, 182)
 
 [connection signal="body_entered" from="cliffside_transistion_point" to="." method="_on_cliffside_transistion_point_body_entered"]
 [connection signal="body_exited" from="cliffside_transistion_point" to="." method="_on_cliffside_transistion_point_body_exited"]

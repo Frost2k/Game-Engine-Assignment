@@ -1,8 +1,12 @@
 #include "register_types.h"
 
+#include "gdexample.h"
 #include "keyinput.h"
 #include "modifyspeed.h"
 #include "automover.h"
+#include "floating_item.h"
+#include "enhanced_input_handling.h"
+
 
 #include "gdexample.h"
 
@@ -21,6 +25,9 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
     GDREGISTER_CLASS(KeyInput);
 	GDREGISTER_CLASS(ModifySpeed);
 	GDREGISTER_CLASS(AutoMover);
+	GDREGISTER_CLASS(FloatingItem);
+	GDREGISTER_CLASS(EnhancedInputHandling);
+
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

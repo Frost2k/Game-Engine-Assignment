@@ -18,7 +18,7 @@ sources = Glob("src/*.cpp")
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "game-engine-assignment-1/bin/libgdexample.{}.{}.framework/libgdexample.{}.{}".format(
+        "game-engine-assignment/bin/libgdexample.{}.{}.framework/libgdexample.{}.{}".format(
             env["platform"], env["target"], env["platform"], env["target"]
         ),
         source=sources,
@@ -26,17 +26,17 @@ if env["platform"] == "macos":
 elif env["platform"] == "ios":
     if env["ios_simulator"]:
         library = env.StaticLibrary(
-            "game-engine-assignment-1/bin/libgdexample.{}.{}.simulator.a".format(env["platform"], env["target"]),
+            "game-engine-assignment/bin/libgdexample.{}.{}.simulator.a".format(env["platform"], env["target"]),
             source=sources,
         )
     else:
         library = env.StaticLibrary(
-            "game-engine-assignment-1/bin/libgdexample.{}.{}.a".format(env["platform"], env["target"]),
+            "game-engine-assignment/bin/libgdexample.{}.{}.a".format(env["platform"], env["target"]),
             source=sources,
         )
 else:
     library = env.SharedLibrary(
-        "game-engine-assignment-1/bin/libgdexample{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        "game-engine-assignment/bin/libgdexample{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
         source=sources,
     )
 
