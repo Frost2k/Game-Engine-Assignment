@@ -470,6 +470,17 @@ rotation_smoothing_enabled = true
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
+[node name="multi_terrain_camera" type="Camera2D" parent="."]
+zoom = Vector2(4, 4)
+limit_left = 0
+limit_top = 0
+limit_right = 1600
+limit_bottom = 800
+limit_smoothed = true
+rotation_smoothing_enabled = true
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+
 [node name="healthbar" type="ProgressBar" parent="."]
 modulate = Color(0.142214, 0.560278, 0.112319, 1)
 offset_left = -10.0

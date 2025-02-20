@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://bu54qemvbxpc0"]
+[gd_scene load_steps=14 format=3 uid="uid://bu54qemvbxpc0"]
 
 [ext_resource type="Texture2D" uid="uid://ce0jms5pyn4o" path="res://assets/mystic_woods/tilesets/plains.png" id="1_6vi40"]
 [ext_resource type="Script" path="res://Scripts/world.gd" id="1_58pw6"]
 [ext_resource type="Texture2D" uid="uid://doa27akknmsw" path="res://assets/mystic_woods/tilesets/grass.png" id="2_6xh8i"]
+[ext_resource type="PackedScene" uid="uid://ceo3n07r1dndc" path="res://scenes/orbit_object.tscn" id="2_d768i"]
 [ext_resource type="Texture2D" uid="uid://bbjunwr4fr5pa" path="res://assets/mystic_woods/objects/objects.png" id="3_kw5e6"]
 [ext_resource type="PackedScene" uid="uid://cp6438jqrjgy1" path="res://scenes/player.tscn" id="4_yauhn"]
 [ext_resource type="PackedScene" uid="uid://bmmiiib3a2u6t" path="res://scenes/enemy.tscn" id="5_pm4vw"]
@@ -155,9 +156,10 @@ layer_2/tile_data = PackedInt32Array(2, 655362, 7, 24, 655362, 7, 262150, 655362
 position = Vector2(282, 128)
 
 [node name="Enemy2" parent="." instance=ExtResource("5_pm4vw")]
-position = Vector2(64, 133)
+position = Vector2(65, 133)
 
 [node name="Player" parent="." instance=ExtResource("4_yauhn")]
+z_index = 1
 position = Vector2(199, 18)
 
 [node name="collisions" type="StaticBody2D" parent="."]
@@ -169,6 +171,12 @@ polygon = PackedVector2Array(0, 0, 173, 0, 173, -45, 230, -45, 230, 0, 416, 0, 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="cliffside_transistion_point"]
 position = Vector2(201.5, -22)
+shape = SubResource("RectangleShape2D_qp0qn")
+
+[node name="multi_terrain_transition_point" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="multi_terrain_transition_point"]
+position = Vector2(436, 111)
 shape = SubResource("RectangleShape2D_qp0qn")
 
 [node name="FloatingItem" parent="." instance=ExtResource("7_nkxe7")]
@@ -183,5 +191,59 @@ position = Vector2(116, 45)
 [node name="FloatingItem4" parent="." instance=ExtResource("7_nkxe7")]
 position = Vector2(163, 182)
 
+[node name="DebugVisualizer" type="DebugVisualizer" parent="."]
+magnetic_orbit_path = NodePath("")
+position = Vector2(0, -1)
+
+[node name="OrbitObject" parent="." instance=ExtResource("2_d768i")]
+position = Vector2(61, 102)
+
+[node name="OrbitObject2" parent="." instance=ExtResource("2_d768i")]
+position = Vector2(223, 161)
+
+[node name="OrbitObject3" parent="." instance=ExtResource("2_d768i")]
+position = Vector2(251, 121)
+
+[node name="OrbitObject4" parent="." instance=ExtResource("2_d768i")]
+position = Vector2(153, 103)
+
+[node name="MagneticOrbit" type="MagneticOrbit" parent="."]
+player_path = NodePath("../Enemy2")
+orbit_object_path = NodePath("../OrbitObject")
+max_distance = 50.0
+orbit_distance = 20.0
+magnetic_force = 20.0
+swirl_factor = 0.1
+gravity_scale = 0.1
+
+[node name="MagneticOrbit2" type="MagneticOrbit" parent="."]
+player_path = NodePath("../Player")
+orbit_object_path = NodePath("../OrbitObject2")
+max_distance = 50.0
+orbit_distance = 40.0
+magnetic_force = 100.0
+swirl_factor = 1.0
+gravity_scale = 0.1
+
+[node name="MagneticOrbit3" type="MagneticOrbit" parent="."]
+player_path = NodePath("../Enemy")
+orbit_object_path = NodePath("../OrbitObject3")
+max_distance = 50.0
+orbit_distance = 20.0
+magnetic_force = 20.0
+swirl_factor = 0.1
+gravity_scale = 0.1
+
+[node name="MagneticOrbit4" type="MagneticOrbit" parent="."]
+player_path = NodePath("../Player")
+orbit_object_path = NodePath("../OrbitObject4")
+max_distance = 50.0
+orbit_distance = 40.0
+magnetic_force = 40.0
+swirl_factor = 0.1
+gravity_scale = 0.1
+
 [connection signal="body_entered" from="cliffside_transistion_point" to="." method="_on_cliffside_transistion_point_body_entered"]
 [connection signal="body_exited" from="cliffside_transistion_point" to="." method="_on_cliffside_transistion_point_body_exited"]
+[connection signal="body_entered" from="multi_terrain_transition_point" to="." method="_on_multi_terrain_transition_point_body_entered"]
+[connection signal="body_exited" from="multi_terrain_transition_point" to="." method="_on_multi_terrain_transition_point_body_exited"]

@@ -50,12 +50,12 @@ void EnhancedInputHandling::_process(double delta) {
     bool sprint_pressed = input->is_action_pressed("sprint");
     
     if( sprint_pressed){
-        UtilityFunctions::print("EnhancedInputHandling: Sprint triggered!");
+        //UtilityFunctions::print("EnhancedInputHandling: Sprint triggered!");
     }
 
     // If sprint is pressed, use sprint_speed, else base_speed
     double effective_speed = sprint_pressed ? sprint_speed : base_speed;
-    UtilityFunctions::print("Effective speed: ", effective_speed);
+    //UtilityFunctions::print("Effective speed: ", effective_speed);
 
     // 2) Movement logic: is_action_pressed for "ui_up", "ui_left", etc.
     Vector2 direction(0, 0);
@@ -75,7 +75,7 @@ void EnhancedInputHandling::_process(double delta) {
     // 3) Attack logic: If "attack" action is just pressed (mapped to F)
     if (input->is_action_just_pressed("attack")) {
 
-        UtilityFunctions::print("EnhancedInputHandling: Attack triggered!");
+        //UtilityFunctions::print("EnhancedInputHandling: Attack triggered!");
     }
 
     // 4) Move the node
@@ -84,7 +84,7 @@ void EnhancedInputHandling::_process(double delta) {
     // Let the GDScript see the new speed
     Node *parent = get_parent(); // the CharacterBody2D
     parent->set("speed", effective_speed);
-    UtilityFunctions::print("EnhancedInputHandling: Speed set to ", effective_speed);
+    //UtilityFunctions::print("EnhancedInputHandling: Speed set to ", effective_speed);
 }
 
 void EnhancedInputHandling::move(Vector2 direction) {

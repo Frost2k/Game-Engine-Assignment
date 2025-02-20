@@ -103,6 +103,7 @@ layer_1/z_index = 1
 layer_1/tile_data = PackedInt32Array(131073, 196608, 5, 65537, 262144, 4, 196609, 196608, 5, 65538, 131072, 6, 65539, 131072, 6, 65540, 131072, 6, 65541, 131072, 6, 65542, 131072, 6, 65543, 131072, 6, 65544, 131072, 6, 65545, 131072, 6, 65546, 327680, 4, 131082, 65536, 5, 196618, 65536, 5, 262154, 65536, 5, 327690, 327680, 5, 327689, 65536, 4, 393225, 65536, 5, 458761, 65536, 5, 524297, 65536, 5, 589833, 327680, 5, 589832, 131072, 4, 589831, 131072, 4, 589830, 131072, 4, 589829, 131072, 4, 589828, 131072, 4, 589827, 131072, 4, 589826, 262144, 5, 589825, 131072, 5, 524289, 131072, 5, 458753, 262144, 5, 262145, 196608, 5, 327681, 196608, 5, 393217, 196608, 5, 458754, 196608, 4, 524290, 196608, 5)
 
 [node name="collisions" type="StaticBody2D" parent="."]
+position = Vector2(-131, -52)
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="collisions"]
 polygon = PackedVector2Array(32, 30, 162, 31, 162, 82, 153, 84, 149, 89, 148, 96, 147, 147, 108, 147, 108, 177, 65, 177, 67, 146, 50, 147, 47, 137, 46, 127, 42, 118, 36, 114, 29, 113, 27, 20, 12, 48, 12, 100, 20, 136, 47, 185, 64, 194, 113, 192, 149, 181, 164, 143, 173, 108, 186, 63, 180, 21, 160, 1, 78, 2, 36, 9)
@@ -150,6 +151,9 @@ position = Vector2(88, 92)
 
 [node name="FloatingItem11" parent="." instance=ExtResource("5_lua2o")]
 position = Vector2(117, 92)
+
+[node name="DebugVisualizer" type="DebugVisualizer" parent="."]
+position = Vector2(-3, -1)
 
 [connection signal="body_entered" from="cliffside_exitpoint" to="." method="_on_cliffside_exitpoint_body_entered"]
 [connection signal="body_exited" from="cliffside_exitpoint" to="." method="_on_cliffside_exitpoint_body_exited"]

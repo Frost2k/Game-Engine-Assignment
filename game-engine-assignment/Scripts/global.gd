@@ -3,7 +3,7 @@ extends Node
 
 var player_current_attack = false
 
-var current_scene = "world" #world or cliff_side
+var current_scene_ = "world" #world or cliff_side
 var transition_scene = false
 
 var player_exit_cliffside_posx = 199
@@ -13,10 +13,9 @@ var player_start_posy = 127
 
 var game_first_loadin = true
 
-func finish_changescenes():
+func finish_changescenes(current_scene):
 	if transition_scene == true:
 		transition_scene = false
-		if current_scene == "world":
-			current_scene = "cliff_side"
-		else:
-			current_scene = "world"
+		current_scene_ = current_scene
+		print("This is in Global: ", current_scene_)
+		

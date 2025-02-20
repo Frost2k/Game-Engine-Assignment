@@ -110,7 +110,7 @@ func enemy_attack():
 		health = health - 10
 		enemy_attack_cooldown = false
 		$attack_cooldown.start()
-		print(health)
+		#print(health)
 
 func _on_attack_cooldown_timeout() -> void:
 	enemy_attack_cooldown = true
@@ -145,12 +145,22 @@ func _on_deal_attack_timer_timeout() -> void:
 	
 	
 func current_camera():
-	if Global.current_scene == "world":
+	if Global.current_scene_ == "world":
 		$world_camera.enabled =true
 		$cliffside_camera.enabled = false
-	elif Global.current_scene == "cliff_side":
+		$multi_terrain_camera.enabled = false
+		#print("This is in current_camera: ", Global.current_scene_ )
+	elif Global.current_scene_ == "cliff_side":
 		$world_camera.enabled =false
 		$cliffside_camera.enabled = true
+		$multi_terrain_camera.enabled = false
+		#print("This is in current_camera: ", Global.current_scene_ )
+	elif Global.current_scene_ == "multi_terrain":
+		$world_camera.enabled =false
+		$cliffside_camera.enabled = false
+		$multi_terrain_camera.enabled = true
+		#print("This is in current_camera: ", Global.current_scene_ )
+		
 		
 func update_health():
 	var healthbar = $healthbar

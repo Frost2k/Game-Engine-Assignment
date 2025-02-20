@@ -6,6 +6,9 @@
 #include "automover.h"
 #include "floating_item.h"
 #include "enhanced_input_handling.h"
+#include "debug_visualizer.h"
+#include "custom_surface.h"
+#include "magnetic_orbit.h"
 
 
 #include "gdexample.h"
@@ -27,6 +30,9 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(AutoMover);
 	GDREGISTER_CLASS(FloatingItem);
 	GDREGISTER_CLASS(EnhancedInputHandling);
+	GDREGISTER_CLASS(DebugVisualizer);
+	GDREGISTER_CLASS(CustomSurface);
+	GDREGISTER_CLASS(MagneticOrbit);
 
 }
 
