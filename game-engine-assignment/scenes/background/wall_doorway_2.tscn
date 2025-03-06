@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://eobxyoaux8ms"]
+
+[ext_resource type="PackedScene" uid="uid://4mgunururqh4" path="res://assets/3d_game/dungeon_assets/building/wall_doorway.glb" id="1_ltofg"]
+
+[node name="wall_doorway2" instance=ExtResource("1_ltofg")]
+
+[node name="wall_doorway_door" parent="wall_doorway" index="0"]
+transform = Transform3D(0.5, 0, -0.866025, 0, 1, 0, 0.866025, 0, 0.5, -0.820099, 0, 0)

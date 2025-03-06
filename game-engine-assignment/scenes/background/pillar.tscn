@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://b2gedca8v7b63"]
+
+[ext_resource type="PackedScene" uid="uid://cnjsiljj2xv22" path="res://assets/3d_game/dungeon_assets/building/pillar.glb" id="1_iv8s2"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_i0264"]
+height = 3.8
+radius = 0.8
+
+[node name="pillar" type="StaticBody3D"]
+
+[node name="pillar2" parent="." instance=ExtResource("1_iv8s2")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+shape = SubResource("CylinderShape3D_i0264")
