@@ -9,6 +9,7 @@
 #include "debug_visualizer.h"
 #include "custom_surface.h"
 #include "magnetic_orbit.h"
+#include "outline_controller_3d.h"
 
 
 #include "gdexample.h"
@@ -33,6 +34,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(DebugVisualizer);
 	GDREGISTER_CLASS(CustomSurface);
 	GDREGISTER_CLASS(MagneticOrbit);
+	GDREGISTER_CLASS(OutlineController3D);
 
 }
 
