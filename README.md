@@ -12,6 +12,9 @@ A compute shader (illustrating advanced shader concepts).
 
 A custom GDExtension in C++ to control specific shader parameters dynamically from native code.
 
+![image](https://github.com/user-attachments/assets/069a7272-e7a7-43e7-81d4-5496721d9e76)
+
+
 https://youtu.be/Tc5avZ11JJA
 
 # 1. Project Overview / Purpose
