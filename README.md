@@ -11,8 +11,7 @@ A simple water shader (from a Godot tutorial example).
 A compute shader (illustrating advanced shader concepts).
 
 A custom GDExtension in C++ to control specific shader parameters dynamically from native code.
-
-![image](https://github.com/user-attachments/assets/069a7272-e7a7-43e7-81d4-5496721d9e76)
+<img src=https://github.com/user-attachments/assets/069a7272-e7a7-43e7-81d4-5496721d9e76 width=50% height=50%>
 
 
 https://youtu.be/Tc5avZ11JJA
@@ -41,29 +40,10 @@ GDExtension: A custom C++ class OutlineController3D, which inherits from Node3D 
 
 # 2. File/Folder Structure
 
-ProjectRoot/
-├─ assets/
-│   └─ shaders/
-│       ├─ CelToon.gdshader
-│       ├─ Outline.gdshader
-│       ├─ simple_water.gdshader
-│       ├─ compute_example.glsl
-│       ├─ CelToonMaterial.tres
-│       └─ OutlineMaterial.tres
-├─ gdextension/
-│   ├─ outline_controller_3d.h
-│   ├─ outline_controller_3d.cpp
-│   ├─ register_types.cpp
-│   └─ ...
-├─ scenes/
-│   ├─ main.tscn
-│   ├─ props/
-│       └─ GodotBot.tscn (demonstration bot for cel shading)
-│   └─ ...
-├─ scripts/
-│   ├─ compute_example.gd
-│   └─ ...
-└─ README.md (this file)
+<img src=https://github.com/user-attachments/assets/88dc54d5-415e-4cf1-94b9-9e75892a5cd8 width=50% height=50%>
+
+
+
 
 
 Key Shader Files
