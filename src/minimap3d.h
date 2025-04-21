@@ -8,6 +8,7 @@
 #include <godot_cpp/core/version.hpp>
 #include <godot_cpp/variant/color.hpp> 
 #include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/node.hpp>
 
 namespace godot {
 
@@ -25,6 +26,9 @@ class MiniMap3D : public SubViewportContainer {
     Color  player_color  = Color(0.2, 0.5, 1.0, 1); // blue
     Color  enemy_color   = Color(1.0, 0.2, 0.2, 1); // red
     float  dot_radius    = 4.0f;
+    float  enemy_dot_radius = 5.0f;                 // separate radius for enemies
+    bool   enemy_glow    = true;                    // whether enemies should glow
+    float  glow_size     = 2.0f;                    // size of the glow effect
 
     /* Runtime */
     SubViewport *mini_vp = nullptr;
@@ -37,6 +41,8 @@ protected:
 public:
     void _ready() override;
     void _process(double delta) override;
+    void _debug_enemy_groups();
+    void _scan_for_enemies(Node* node, int depth);
 
     /* setters / getters */
     void set_player_path(const NodePath &p) { player_path = p; }
@@ -63,6 +69,18 @@ public:
 
     void set_enemy_group(String g) { enemy_group = g; }
     String get_enemy_group() const { return enemy_group; }
+
+    void set_dot_radius(float r) { dot_radius = r; }
+    float get_dot_radius() const { return dot_radius; }
+
+    void set_enemy_dot_radius(float r) { enemy_dot_radius = r; }
+    float get_enemy_dot_radius() const { return enemy_dot_radius; }
+
+    void set_enemy_glow(bool g) { enemy_glow = g; }
+    bool get_enemy_glow() const { return enemy_glow; }
+
+    void set_glow_size(float s) { glow_size = s; }
+    float get_glow_size() const { return glow_size; }
 
      void _draw() override;   
 
