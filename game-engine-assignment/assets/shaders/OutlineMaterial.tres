@@ -5,7 +5,7 @@
 [resource]
 render_priority = 0
 shader = ExtResource("1_c71xy")
+shader_parameter/outline_color = Color(0, 0, 0, 1)
 shader_parameter/noise_scale = 3.0
 shader_parameter/deformation_strength = 0.1
 shader_parameter/outline_thickness = 0.03
-shader_parameter/outline_color = Vector4(0, 0, 0, 1)
