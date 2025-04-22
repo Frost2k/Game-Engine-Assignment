@@ -45,6 +45,7 @@ Necromancer Keep is a first-person adventure/dungeon crawler where players navig
 - **Sprint**: Shift
 - **Shoot**: Left Mouse Button
 - **Fly**: ~
+- **Pickup Items**: O keys (can pick up keyrings, candles, chair and coins)
 
 ## 4. Implementation Details
 
