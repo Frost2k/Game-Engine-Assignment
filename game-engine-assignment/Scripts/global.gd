@@ -47,6 +47,10 @@ var game_first_loadin = true
 
 signal gem_collected(gem_type, value)
 
+# Game state
+var game_started: bool = false
+var current_level: int = 1
+
 func _ready():
 	print("Global singleton initialized")
 	
@@ -81,7 +85,7 @@ func apply_luck_to_chance(base_chance: float) -> float:
 		
 # Get count of specific gem type
 func get_gem_count(gem_type: int) -> int:
-	if gem_type >= 0 and gem_type < 5 and gem_counts.has(gem_type):
+	if gem_type >= 0 and gem_type < gem_counts.size():
 		return gem_counts[gem_type]
 	return 0
 
@@ -90,3 +94,22 @@ func _on_gem_collected(gem_type: int, value: int) -> void:
 	# This function ensures the internal counts stay updated
 	# Already handled in collect_gem, but kept for future extensibility
 	pass
+
+func add_gem(gem_type: int):
+	if gem_type >= 0 and gem_type < gem_counts.size():
+		gem_counts[gem_type] += 1
+		gems_collected += 1
+
+func use_gem(gem_type: int) -> bool:
+	if gem_type >= 0 and gem_type < gem_counts.size() and gem_counts[gem_type] > 0:
+		gem_counts[gem_type] -= 1
+		return true
+	return false
+
+# Reset game state
+func reset_game():
+	gems_collected = 0
+	enemies_defeated = 0
+	luck_multiplier = 1.0
+	gem_counts = [0, 0, 0, 0, 0]
+	current_level = 1

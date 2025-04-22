@@ -644,8 +644,87 @@ func die():
 	# Implement death behavior here
 	print("Player died!")
 	
-	# For now, just restart the current scene
+	# Show death menu instead of immediately restarting
+	show_death_menu()
+
+func show_death_menu():
+	# Create a death menu if it doesn't exist
+	if !has_node("PlayerUI") or !$PlayerUI.has_node("DeathMenu"):
+		var canvas_layer
+		if has_node("PlayerUI"):
+			canvas_layer = $PlayerUI
+		else:
+			canvas_layer = CanvasLayer.new()
+			canvas_layer.name = "PlayerUI"
+			add_child(canvas_layer)
+			
+		# Create the menu container
+		var menu = Control.new()
+		menu.name = "DeathMenu"
+		menu.set_anchors_preset(Control.PRESET_FULL_RECT)
+		menu.mouse_filter = Control.MOUSE_FILTER_STOP
+		canvas_layer.add_child(menu)
+		
+		# Dark background overlay
+		var overlay = ColorRect.new()
+		overlay.name = "DarkOverlay"
+		overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		overlay.color = Color(0, 0, 0, 0.7)
+		menu.add_child(overlay)
+		
+		# Death message
+		var title = Label.new()
+		title.name = "DeathTitle"
+		title.text = "YOU DIED"
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		title.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		title.position = Vector2(0, 150)
+		title.add_theme_font_size_override("font_size", 64)
+		title.add_theme_color_override("font_color", Color(0.8, 0.1, 0.1))
+		menu.add_child(title)
+		
+		# Container for buttons
+		var button_container = VBoxContainer.new()
+		button_container.name = "ButtonContainer"
+		button_container.set_anchors_preset(Control.PRESET_CENTER)
+		button_container.position = Vector2(0, 50)
+		button_container.custom_minimum_size = Vector2(200, 150)
+		button_container.separation = 20
+		button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+		menu.add_child(button_container)
+		
+		# Restart button
+		var restart_button = Button.new()
+		restart_button.name = "RestartButton"
+		restart_button.text = "RESTART"
+		restart_button.custom_minimum_size = Vector2(200, 50)
+		restart_button.pressed.connect(self.restart_game)
+		button_container.add_child(restart_button)
+		
+		# Quit button
+		var quit_button = Button.new()
+		quit_button.name = "QuitButton"
+		quit_button.text = "QUIT TO MENU"
+		quit_button.custom_minimum_size = Vector2(200, 50)
+		quit_button.pressed.connect(self.quit_to_menu)
+		button_container.add_child(quit_button)
+	
+	# Show menu and enable mouse
+	$PlayerUI/DeathMenu.visible = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func restart_game():
+	# Hide death menu
+	if has_node("PlayerUI") and $PlayerUI.has_node("DeathMenu"):
+		$PlayerUI/DeathMenu.visible = false
+	
+	# Reload current scene
 	get_tree().reload_current_scene()
+
+func quit_to_menu():
+	# Return to start menu scene
+	get_tree().change_scene_to_file("res://Scenes/start_menu.tscn")
 
 func ensure_input_actions_exist():
 	# Make sure all input actions exist
