@@ -1,214 +1,127 @@
-# Cel-Shaded 3D Game
+# Necromancer Keep
+
+A first-person dungeon exploration game developed in Godot Engine with custom C++ GDExtension modules.
+
+## 1. Overview
+
+Necromancer Keep is a first-person adventure/dungeon crawler where players navigate through mysterious environments, collect magical gems, and battle against necromantic forces. The game features a robust UI system, inventory management, and custom minimap functionality implemented through C++ GDExtension.
+
+## 2. Features Implemented
+
+### 2.1 User Interface System (GDExtension)
+- Modular UI framework built with custom C++ components
+- Dynamic health and status bars with animated transitions
+- Gem inventory display system with real-time updates
+- Start menu and death screen with seamless scene transitions
+
+### 2.2 Minimap System (GDExtension)
+- Real-time player position tracking using C++ for optimized performance
+- Dynamic enemy and point-of-interest indicators
+- Automatic discovery and reveal mechanics
+- Customizable display options and zoom functionality
 
-This project demonstrates a 3D Godot 4 game that features:
+### 2.3 Player Mechanics
+- Fluid first-person movement with WASD controls
+- Sprint, jump, and crouch capabilities
+- Health and damage system with visual feedback
+- Projectile combat with visual effects
 
-Cel (toon) shading (fragment shader).
+### 2.4 Collection/Inventory System
+- Five distinct gem types with unique effects
+  - Purple (Magic): Energy restoration
+  - Red (Health): Health restoration
+  - Blue (Shield): Temporary shield bonus
+  - Green (Speed): Movement speed boost
+  - Yellow (Luck): Increased drop rates
+- Inventory management with visual representation
+- Use/consume functionality for gems
+- Drop mechanics for sharing or discarding items
 
-A mesh outline effect (vertex shader).
+## 3. Controls
 
-A simple water shader (from a Godot tutorial example).
+- **Movement**: WASD keys
+- **Look**: Mouse
+- **Jump**: Space bar
+- **Sprint**: Shift
+- **Shoot**: Left Mouse Button
+- **Fly**: ~
 
-A compute shader (illustrating advanced shader concepts).
+## 4. Implementation Details
 
-A custom GDExtension in C++ to control specific shader parameters dynamically from native code.
-<img src=https://github.com/user-attachments/assets/069a7272-e7a7-43e7-81d4-5496721d9e76 width=50% height=50%>
+### 4.1 UI System (GDExtension)
+The UI system was implemented using C++ via GDExtension to create a highly optimized and responsive interface. Key components include:
 
+- **HealthDisplay**: A custom C++ component that handles health visualization with smooth animations and visual effects when damage is taken.
+- **GemsUI**: Manages the gem collection interface with real-time updates and visual feedback.
+- **MenuSystem**: Handles the main menu, death screen, and transition effects with minimal performance impact.
 
-https://youtu.be/Tc5avZ11JJA
+The UI system was designed to be extensible, allowing for easy addition of new elements and customization.
 
-# 1. Project Overview / Purpose
+### 4.2 Minimap Implementation (GDExtension)
+The minimap was built using custom C++ components to ensure optimal performance even with numerous tracked entities. Features include:
 
-Language: Primarily Godot 4 GDScript for gameplay logic, plus:
+- **SpatialMapping**: Converts 3D world coordinates to 2D minimap space efficiently.
+- **EntityTracker**: Maintains and updates positions of players, enemies, and points of interest.
+- **CustomRenderer**: Provides a high-performance rendering pipeline for the minimap.
 
-ShaderLanguage (GSL) for custom materials (cel-shading and outline).
+## 5. Team Contributions
 
-C++ (GDExtension) for extended control of shader parameters.
+### 5.1 UI and Collection Systems (Implemented) Thomas
+- Custom UI framework with health, inventory, and status displays
+- Gem collection system with different gem types and effects
+- Start menu and death screen implementation
+- Visual feedback systems for player actions
 
-Goal: Demonstrate how to write both vertex and fragment shaders to achieve a cartoon-like or stylized rendering effect, then manage them in real time using GDScript and (optionally) C++.
+### 5.2 AI Pathfinding and Enemy Behavior (TBD)
+*[This section will be completed by team member implementing the AI subsystem]*
 
-Key Features:
+Key goals:
+- Custom pathfinding algorithms for dynamic environments
+- Context-aware enemy behavior
+- Dynamic difficulty adjustment based on player performance
+- Formation-based enemy coordination
 
-Cel (Toon) Shading: Quantizes lighting into discrete bands, giving objects a “cartoon” look.
+### 5.3 Networking and Multiplayer (TBD)
+*[This section will be completed by team member implementing the networking features]*
 
-Mesh Outline: Uses a vertex shader to slightly expand and flip culling, creating a bold, cartoonish edge around 3D models.
+Key goals:
+- Lobby and matchmaking system
+- State synchronization with prediction algorithms
+- Client-side prediction and server reconciliation
+- Drop-in/drop-out multiplayer support
 
-Simple Water Shader: Based on the official Godot “Your second 3D shader” tutorial – placed beneath the level for an animated water surface.
+## 6. Building and Running the Project
 
-Compute Shader: Contains a minimal GLSL compute_example.glsl demonstrating how to use compute shaders in Godot 4.
+### 6.1 Prerequisites
+- Godot 4.1 or higher
+- C++ build tools (Visual Studio 2019+ or equivalent on other platforms)
+- SCons build system
 
-GDExtension: A custom C++ class OutlineController3D, which inherits from Node3D and updates the outline shader’s uniforms (color, thickness, noise scale, etc.) in real time.
+### 6.2 Building the GDExtension Modules
+1. Navigate to the `gdextension` directory
+2. Run `scons platform=<platform>` where `<platform>` is your target platform (windows, linux, macos)
+3. The compiled libraries will be placed in the appropriate location automatically
 
-# 2. File/Folder Structure
+### 6.3 Running the Game
+1. Open the project in Godot Engine
+2. Run the project or export for your target platform
 
-<img src=https://github.com/user-attachments/assets/88dc54d5-415e-4cf1-94b9-9e75892a5cd8 width=50% height=50%>
+## 7. Future Work
 
+- Additional gem types and effects
+- More diverse environments and enemy types
+- Expanded combat mechanics
+- Persistent player progression system
+- Level editor for custom dungeon creation
 
+## 8. License
 
+This project is developed as part of CS-5891 Game Engine course and is intended for educational purposes.
 
+## 9. Credits
 
-Key Shader Files
-
-CelToon.gdshader
-
-Implements a fragment function that quantizes lighting into discrete bands for a cartoon effect.
-
-Uniforms: base_color, toon_opacity, toon_levels, etc.
-
-Outline.gdshader
-
-Implements a vertex function that inflates the mesh slightly and uses render_mode cull_front for an outline effect.
-
-Uniforms: outline_color, outline_thickness, deformation_strength, etc.
-
-simple_water.gdshader
-
-From the “Your second 3D shader” tutorial. Uses PBR-like parameters (ALBEDO, ROUGHNESS, METALLIC) and wave math in the vertex shader.
-
-compute_example.glsl
-
-A minimal example of a compute shader, showing how to multiply an array of floats by 2 on the GPU.
-
-GDExtension Files
-
-outline_controller_3d.h / outline_controller_3d.cpp
-
-A custom C++ node (OutlineController3D) that syncs certain outline shader uniforms (outline_color, noise_scale, deformation_strength, etc.) from native code at runtime.
-
-Demonstrates how to create a GDExtension class that updates a ShaderMaterial’s parameters each frame.
-
-# 3. Running the Game
-
-Open the Project in Godot 4.
-
-Go to Project → Project Settings → Main Scene or open scenes/main.tscn manually and press the Play button.
-
-Player Controls:
-
-W, A, S, D to move.
-
-Mouse to look around (in 3D).
-
-Shift key to move faster (run).
-
-~ (tilde) key to enable fly mode.
-
-Shader Scenes:
-
-The main scene has two “Godot Bot” figures with the CelToon shader.
-
-An Outline effect can be added to these or other meshes.
-
-A water plane with the simple water shader is placed “under the level,” visible if you look through the window or below the map.
-
-GDExtension Usage:
-
-If you attach the OutlineController3D node to any 3D model and assign its ShaderMaterial, you can dynamically tweak the outline properties in real time.
-
-# 4. Controls & Gameplay
-
-Movement: Use W, A, S, D (and mouse look).
-
-Run: Hold Shift to increase movement speed.
-
-Fly: Press ~ to toggle flight mode (no gravity).
-
-Observe Cel Shading: The “Godot Bot” characters have discrete shading bands visible on their surfaces.
-
-Observe Outline: Outline can be toggled by applying the OutlineMaterial to any mesh, or hooking up OutlineController3D.
-
-Water: Look out the window or below the level to see the wave animation.
-
-Compute Shader: Not directly visible in the scene, but compute_example.glsl can be run from GDScript to process data on the GPU.
-
-# 5. Differences: GDScript vs. GDExtension
-
-GDScript
-
-Standard node logic, such as moving the player, handling input, or simple animation.
-
-Can directly set shader uniforms with material.set_shader_parameter("param", value).
-
-GDExtension (C++)
-
-Demonstrates custom classes for specialized effects or performance-critical code.
-
-Example: OutlineController3D updates outline_color, noise_scale, etc. every frame from C++.
-
-This approach can be more performant and is useful if you want to integrate complex logic or external libraries at the native level.
-
-# 6. Summaries of the Godot Shader Tutorials
-
-This project also includes tutorial examples from the official Godot documentation on shaders. Below are brief highlights of each:
-
-## Tutorial 1: Your First 3D Shader
-
-Goal: Learn how vertex displacement works in a spatial shader.
-
-Key Steps:
-
-Created a plane, subdivided it into many vertices.
-
-<img width="378" alt="plane_mesh" src="https://github.com/user-attachments/assets/08b88426-e934-4bd7-a79c-f36038b414db" />
-<img width="579" alt="subdivde" src="https://github.com/user-attachments/assets/dd06083a-997a-492f-b4f5-1af7581f7316" />
-
-Added a NoiseTexture uniform (sampler2D) to displace vertices (heightmap).
-
-Used VERTEX adjustments in the vertex() function to produce little hills.
-
-<img width="774" alt="vertex" src="https://github.com/user-attachments/assets/e73b5477-2810-4f47-8bff-af4160f022e2" />
-
-Combined a normal map to fix lighting issues or recalculate normals.
-
-<img width="474" alt="light" src="https://github.com/user-attachments/assets/6598ed3c-f3f8-4746-a9ef-0672a97ffbdc" />
-
-Result: A wavy or bumpy plane that reacts properly to light.
-
-<img width="667" alt="final" src="https://github.com/user-attachments/assets/44242423-02e8-4ff3-a73d-a15c9e70f0eb" />
-
-## Tutorial 2: Your Second 3D Shader
-
-Goal: Turn the previous terrain into water via fragment shading.
-
-Key Steps:
-
-Learned about PBR properties (METALLIC, ROUGHNESS, etc.) and how to set them in the fragment() function.
-
-<img width="689" alt="advanced water" src="https://github.com/user-attachments/assets/c7a19723-7d2c-4531-810b-934bd9e9201d" />
-
-Used render_mode specular_toon for stylized highlights.
-
-<img width="733" alt="fresnel" src="https://github.com/user-attachments/assets/d9f00257-9c5f-4dc8-a99b-dcc9aaa2b56e" />
-
-Computed a fresnel term to simulate reflectance at shallow angles.
-
-Animated wave motion by combining multiple sine/cosine layers.
-
-<img width="383" alt="added to game" src="https://github.com/user-attachments/assets/a8b40bdd-af3f-42d2-9c12-b0080c9d2504" />
-
-Result: A dynamic water surface with simple wave motion.
-
-## Tutorial 3: Using Compute Shaders
-
-Goal: Execute general-purpose GPU code for tasks not strictly tied to rendering.
-
-Key Steps:
-
-Wrote a GLSL file (compute_example.glsl) with a #[compute] directive.
-
-Used a local RenderingDevice to create buffers, dispatch workgroups, and synchronize results.
-
-Demonstrated reading back from GPU memory to see changes (multiplying an array of floats).
-
-Result: A stepping stone to offloading complex calculations to the GPU, beyond just vertex/fragment shading.
-
-<img width="630" alt="rendering engine" src="https://github.com/user-attachments/assets/c4dad2f2-9773-4fc6-815b-b7f57a5f5b1e" />
-
-
-# 7. Custom C++ Module
-
-Custom C++ Module: This project uses an OutlineController3D GDExtension class to allow for manually setting ShaderMaterial parameters only from GDScript.
-
-# 8. Extra Credit
-
-Interactive Shaders: Player-driven changes (lighting) demonstrate real-time updates, such as adjusting the outline thickness.
-
+Developed by [Your Team Name]
+- UI and Collection Systems: Thomas Scott
+- AI Pathfinding: [Team Member Name]
+- Networking: [Team Member Name]
+- Additional contributions: [Other Team Members] 
