@@ -37,6 +37,14 @@ extends CharacterBody3D
 ## Projectile scene to instance
 @export var projectile_scene : PackedScene = preload("res://scenes/projectile.tscn")
 
+@export_group("Inventory")
+## Enable inventory system
+@export var has_inventory : bool = true
+## Maximum inventory slots
+@export var inventory_slots : int = 20
+## Input action to toggle inventory
+@export var input_inventory : String = "inventory_toggle"
+
 @export_group("Input Actions")
 ## Name of Input Action to move Left.
 @export var input_left : String = "ui_left"
@@ -72,6 +80,7 @@ var can_shoot : bool = true
 @onready var projectile_launcher = null
 @onready var fire_timer = null 
 @onready var health_bar = null
+@onready var inventory_system = null
 
 func _ready() -> void:
 	# Check if Head exists, create if needed
@@ -141,6 +150,10 @@ func _ready() -> void:
 	else:
 		health_bar = get_node("HealthBar")
 	
+	# Create inventory system if enabled
+	if has_inventory:
+		setup_inventory()
+	
 	# Initialize health
 	health = max_health
 	if health_bar:
@@ -181,6 +194,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Handle shooting
 	if Input.is_action_pressed(input_shoot) and can_shoot:
 		shoot()
+		
+	# Toggle inventory
+	if has_inventory and Input.is_action_just_pressed(input_inventory):
+		toggle_inventory()
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -361,3 +378,66 @@ func check_input_mappings():
 		can_freefly = false
 	if not InputMap.has_action(input_shoot):
 		push_error("Shooting disabled. No InputAction found for input_shoot: " + input_shoot)
+	
+	# Check inventory input
+	if has_inventory and not InputMap.has_action(input_inventory):
+		push_error("Inventory disabled. No InputAction found for input_inventory: " + input_inventory)
+		has_inventory = false
+
+# Setup inventory system
+func setup_inventory():
+	# Check if we already have an inventory system
+	if has_node("InventorySystem"):
+		inventory_system = get_node("InventorySystem")
+		return
+		
+	# Try to load the inventory system script
+	var inventory_script = load("res://Scripts/inventory_system.gd")
+	
+	if inventory_script:
+		inventory_system = inventory_script.new()
+		inventory_system.name = "InventorySystem"
+		inventory_system.max_slots = inventory_slots
+		add_child(inventory_system)
+		print("Created inventory system with " + str(inventory_slots) + " slots")
+	else:
+		print("ERROR: Could not load inventory system script!")
+
+# Toggle inventory visibility
+func toggle_inventory():
+	if inventory_system:
+		inventory_system.toggle_inventory()
+
+# Function to add an item to the inventory
+# Used by gem pickup system
+func add_to_inventory(item):
+	if inventory_system:
+		return inventory_system.add_to_inventory(item)
+	return false
+
+# Function to drop an item from inventory into the world
+func drop_item_from_inventory(item, index):
+	# If this is a gem, spawn it in the world
+	if item.id == "magic_gem":
+		var gem_scene = load("res://scenes/magic_gem.tscn")
+		if gem_scene:
+			var gem = gem_scene.instantiate()
+			
+			# Copy item data to the gem
+			gem.item_name = item.name
+			gem.item_description = item.description
+			gem.item_value = item.value
+			gem.item_icon = item.icon
+			
+			# Position the gem in front of the player
+			var spawn_pos = global_position + head.global_transform.basis.z * -2
+			spawn_pos.y = global_position.y + 1
+			gem.global_position = spawn_pos
+			
+			# Add to scene
+			get_tree().current_scene.add_child(gem)
+			print("Dropped " + item.name + " from inventory")
+			
+			return true
+	
+	return false

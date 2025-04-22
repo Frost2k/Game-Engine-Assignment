@@ -23,6 +23,13 @@ extends CharacterBody3D
 @export var projectile_damage: float = 15.0
 @export var attack_cooldown: float = 2.0  # Time between attacks
 
+# Drop variables
+@export_group("Drops")
+@export var drop_gem_chance: float = 0.75  # Default chance to drop a gem
+@export var gem_scene_path: String = "res://scenes/magic_gem.tscn"
+@export_enum("Random", "Purple:0", "Red:1", "Blue:2", "Green:3", "Yellow:4") var fixed_gem_type: int = 0
+@export var force_gem_drop: bool = false  # If true, always drops a gem
+
 # State variables
 enum State {IDLE, WANDER, CHASE, ATTACK}
 var current_state = State.IDLE
@@ -519,6 +526,45 @@ func die():
 	# Debug message
 	print(name + " has been defeated!")
 	
+	# Track enemy defeat in global stats
+	if "Global" in get_node("/root"):
+		Global.enemies_defeated += 1
+	
+	# Check if we should spawn a gem
+	var should_spawn_gem = force_gem_drop
+	
+	if not should_spawn_gem:
+		if "Global" in get_node("/root") and Global.has_method("apply_luck_to_chance"):
+			# Apply luck to base drop chance
+			var drop_chance = Global.apply_luck_to_chance(drop_gem_chance)
+			
+			# Random roll for gem drop
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			should_spawn_gem = rng.randf() <= drop_chance
+		else:
+			# Default drop chance if Global singleton is missing or method not found
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			should_spawn_gem = rng.randf() <= drop_gem_chance
+	
+	# Always drop from bosses or special enemies
+	if name.to_lower().contains("boss") or name.to_lower().contains("elite"):
+		should_spawn_gem = true
+	
+	# Spawn a gem if conditions are met
+	if should_spawn_gem:
+		# Create a visual effect at the enemy's position to show where the gem will spawn
+		create_gem_spawn_effect()
+		
+		# Use a timer to delay the gem spawn slightly for better visual effect
+		var spawn_timer = Timer.new()
+		spawn_timer.one_shot = true
+		spawn_timer.wait_time = 0.5
+		add_child(spawn_timer)
+		spawn_timer.timeout.connect(spawn_gem)
+		spawn_timer.start()
+	
 	# Play death animation
 	play_animation("death")
 	
@@ -557,7 +603,150 @@ func die():
 		await tween.finished
 	
 	# Remove from scene
-	queue_free() 
+	queue_free()
+
+# Creates a visual effect to highlight where the gem will spawn
+func create_gem_spawn_effect():
+	# Create a light to indicate gem spawn
+	var light = OmniLight3D.new()
+	light.name = "GemSpawnLight"
+	light.light_color = Color(1, 1, 1)  # Bright white light
+	light.light_energy = 5.0
+	light.omni_range = 4.0
+	light.position = global_position + Vector3(0, 0.5, 0)
+	
+	# Add to scene
+	get_tree().current_scene.add_child(light)
+	
+	# Create a tween to animate the light
+	var tween = create_tween()
+	tween.tween_property(light, "light_energy", 0.0, 0.5)
+	tween.tween_callback(func(): light.queue_free())
+
+func spawn_gem():
+	# Load the gem scene
+	print("=== SPAWN GEM ATTEMPT ===")
+	print("Attempting to spawn gem for " + name + " at position " + str(global_position))
+	var gem_scene = load(gem_scene_path)
+	
+	if gem_scene:
+		print("Gem scene loaded successfully")
+		
+		# Instance the gem
+		var gem = gem_scene.instantiate()
+		print("Gem instance created")
+		
+		# Use the scene as parent instead of relying on enemy's transform
+		var main_scene = get_tree().current_scene
+		print("Current scene: " + main_scene.name)
+		
+		# Store the position before we're removed from the tree
+		# Ensure gem spawns ABOVE the floor by using a larger Y offset
+		var spawn_position = global_position + Vector3(0, 3.0, 0)  # Increased from 2.0 to 3.0
+		
+		# Make sure the gem is at least at floor level (assuming floor is at y=0)
+		# This ensures it doesn't spawn below even if enemy is in a pit
+		if spawn_position.y < 0:
+			spawn_position.y = 1.0  # Minimum height above zero
+			
+		print("Target spawn position: " + str(spawn_position))
+		
+		# Add the gem to the main scene
+		main_scene.add_child(gem)
+		print("Gem added to scene tree")
+		
+		# Set position after adding to scene
+		gem.global_position = spawn_position
+		
+		# Determine gem type - weighted random selection
+		var rng = RandomNumberGenerator.new()
+		rng.randomize()
+		
+		var gem_type = 0  # Default to purple (magic)
+		
+		# Use fixed gem type if specified, otherwise use random
+		if fixed_gem_type > 0:
+			gem_type = fixed_gem_type - 1  # Adjust for enum offset (Random is 0)
+		else:
+			var gem_type_roll = rng.randf()
+			
+			# Different enemies could have different gem drop rates
+			# For this example, we'll use a general probability distribution
+			if gem_type_roll < 0.50:
+				# 50% chance of purple gem (most common)
+				gem_type = 0
+			elif gem_type_roll < 0.75:
+				# 25% chance of red gem (health)
+				gem_type = 1
+			elif gem_type_roll < 0.90:
+				# 15% chance of blue gem (shield)
+				gem_type = 2
+			elif gem_type_roll < 0.97:
+				# 7% chance of green gem (speed)
+				gem_type = 3
+			else:
+				# 3% chance of yellow gem (luck - most rare)
+				gem_type = 4
+		
+		# Set the gem type
+		gem.gem_type = gem_type
+		
+		# Randomize gem value based on enemy strength and gem type
+		# Rarer gems are worth more
+		var base_value = 10 + (gem_type * 5)
+		gem.item_value = randi_range(base_value, base_value + 15)
+		
+		# Set effect power based on enemy level/difficulty
+		# For now use a simple formula, but this could be tied to enemy level
+		gem.effect_power = 1.0 + (gem_type * 0.2)
+		
+		# Apply the gem's properties based on its type
+		gem.update_gem_properties()
+		gem.apply_gem_material()
+		
+		# Scale up the gem to make it more visible
+		gem.scale = Vector3(1.5 + (gem_type * 0.1), 1.5 + (gem_type * 0.1), 1.5 + (gem_type * 0.1))
+		
+		# Increase collision radius for easier pickup
+		if gem.has_node("CollisionShape3D"):
+			# Adjust collision shape to match new scale
+			gem.get_node("CollisionShape3D").scale = Vector3(1.2, 1.2, 1.2)
+			
+		print("Gem spawned successfully with type: " + str(gem_type))
+		
+		# Create a small particle effect to draw attention
+		create_gem_spawn_particles(spawn_position)
+	else:
+		push_error("Failed to load gem scene from: " + gem_scene_path)
+
+func create_gem_spawn_particles(position):
+	# This function creates particles when a gem spawns to make it more noticeable
+	var particles = CPUParticles3D.new()
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 0.8
+	particles.amount = 16
+	particles.lifetime = 1.0
+	particles.mesh = SphereMesh.new()
+	particles.mesh.radius = 0.1
+	particles.mesh.height = 0.2
+	particles.direction = Vector3(0, 1, 0)
+	particles.spread = 45.0
+	particles.gravity = Vector3(0, -9.8, 0)
+	particles.initial_velocity_min = 2.0
+	particles.initial_velocity_max = 5.0
+	
+	# Add to scene
+	get_tree().current_scene.add_child(particles)
+	particles.global_position = position
+	
+	# Auto-delete after particles finish
+	var timer = Timer.new()
+	timer.wait_time = 2.0
+	timer.one_shot = true
+	timer.timeout.connect(func(): particles.queue_free())
+	particles.add_child(timer)
+	timer.start()
 
 func _handle_obstacle_collision():
 	# Debug message
