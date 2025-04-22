@@ -398,7 +398,7 @@ func restart_game():
 ## Quit to the main menu
 func quit_to_menu():
 	# Return to start menu scene
-	get_tree().change_scene_to_file("res://Scenes/start_menu.tscn")
+	get_tree().change_scene_to_file("res://scenes/start_menu.tscn")
 
 ## Shoot a projectile
 func shoot():

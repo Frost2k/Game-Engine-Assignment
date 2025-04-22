@@ -1,7 +1,7 @@
 extends Control
 
 # Path to the main game scene
-@export var main_game_scene: String = "res://Scenes/main.tscn"
+@export var main_game_scene: String = "res://scenes/main.tscn"
 
 func _ready():
 	# Show mouse cursor

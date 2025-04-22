@@ -2,8 +2,8 @@ extends CharacterBody3D
 
 # Enemy stats
 @export_group("Stats")
-@export var max_health: float = 100.0
-@export var current_health: float = 100.0
+@export var max_health: float = 200.0
+@export var current_health: float = 200.0
 @export var damage: float = 10.0
 @export var damage_cooldown: float = 0.3
 
@@ -18,10 +18,11 @@ extends CharacterBody3D
 
 # Projectile settings
 @export_group("Combat")
-@export var projectile_scene: PackedScene = preload("res://Scenes/mage_projectile.tscn")
+@export var projectile_scene: PackedScene = preload("res://scenes/mage_projectile.tscn")
 @export var projectile_speed: float = 8.0
 @export var projectile_damage: float = 15.0
 @export var attack_cooldown: float = 2.0  # Time between attacks
+@export var projectile_color: Color = Color(0.5, 0.2, 0.8, 0.8)  # Default purple color
 
 # Drop variables
 @export_group("Drops")
@@ -43,6 +44,10 @@ var wander_timer: Timer
 var attack_timer: Timer
 var rng = RandomNumberGenerator.new()
 var animation_player: AnimationPlayer
+var damaged_timer: float = 0.0
+var hit_effect_scene: PackedScene
+var hit_sounds: Array = []
+var is_dead: bool = false
 
 # Called when the node enters the scene tree for the first time
 func _ready():
@@ -94,6 +99,31 @@ func _ready():
 	# Print debug message to confirm the enemy is loaded
 	print("Enemy initialized: " + name + " at position " + str(global_position))
 	play_animation("idle")
+
+func _process(delta):
+	# Update damaged timer for flashing effect
+	if damaged_timer > 0:
+		damaged_timer -= delta
+	
+	# Handle health bar if it exists
+	if health_bar and health_bar.visible:
+		# Make sure the health bar faces the camera 
+		var camera = get_viewport().get_camera_3d()
+		if camera:
+			# Ensure sprite is the one that rotates to face camera, not the entire health bar node
+			var sprite = health_bar.find_child("Sprite", true, false)
+			if sprite:
+				# The Sprite3D already has billboard mode enabled, so it automatically faces the camera
+				# Just ensure it's positioned correctly above the enemy
+				
+				# If health is close to max, gradually fade out the health bar
+				if current_health > max_health * 0.95 and current_health < max_health:
+					if sprite.modulate.a > 0.1:
+						sprite.modulate.a -= delta * 0.5
+				
+				# If enemy took damage recently, ensure the health bar is fully visible
+				if damaged_timer > 0:
+					sprite.modulate.a = 1.0
 
 func _physics_process(delta):
 	# Get player reference if we don't have one
@@ -246,6 +276,13 @@ func _attack_player():
 	projectile.damage = projectile_damage
 	projectile.set_direction(direction)
 	
+	# Set custom projectile color if the projectile supports it
+	if projectile.has_method("set_projectile_color"):
+		projectile.set_projectile_color(projectile_color)
+	# Alternative approach if the projectile has a direct color property
+	elif "projectile_color" in projectile:
+		projectile.projectile_color = projectile_color
+	
 	print(name + " shoots magic ball at player")
 
 func _on_attack_timer_timeout():
@@ -256,11 +293,16 @@ func get_current_health() -> float:
 	return current_health
 
 func setup_health_bar():
+	print(name + ": Setting up health bar")
+	
 	# Check if we already have a health bar child
 	if has_node("HealthBar3D"):
 		health_bar = $HealthBar3D
+		print(name + ": Using existing health bar")
 		return
 		
+	print(name + ": Creating new health bar")
+	
 	# Create a 3D health bar using a SubViewport
 	var health_bar_scene = Node3D.new()
 	health_bar_scene.name = "HealthBar3D"
@@ -272,12 +314,15 @@ func setup_health_bar():
 	viewport.transparent_bg = true
 	viewport.disable_3d = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	health_bar_scene.add_child(viewport)
+	print(name + ": Created viewport")
 	
 	# Create a control node to hold all UI elements
 	var control = Control.new()
 	control.name = "HealthBarContainer"
 	control.set_anchors_preset(Control.PRESET_FULL_RECT)
 	control.size = Vector2(300, 30)
+	viewport.add_child(control)
 	
 	# Create background panel with fantasy style
 	var panel = Panel.new()
@@ -299,6 +344,7 @@ func setup_health_bar():
 	panel_style.shadow_color = Color(0, 0, 0, 0.3)
 	panel_style.shadow_size = 4
 	panel.add_theme_stylebox_override("panel", panel_style)
+	control.add_child(panel)
 	
 	# Create the progress bar - now fills most of the container
 	var progress = ProgressBar.new()
@@ -335,113 +381,125 @@ func setup_health_bar():
 	
 	progress.add_theme_stylebox_override("fill", fill_style)
 	progress.add_theme_stylebox_override("background", bg_style)
-	
-	# Add UI elements to control
-	control.add_child(panel)
 	control.add_child(progress)
-	
-	# Add control to viewport
-	viewport.add_child(control)
+	print(name + ": Added progress bar")
 	
 	# Create sprite to display the viewport texture - double the size and much higher
 	var sprite = Sprite3D.new()
 	sprite.name = "Sprite"
-	sprite.texture = viewport.get_texture()
 	sprite.pixel_size = 0.007  # Increased size
 	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sprite.position = Vector3(0, 3.5, 0)  # Positioned much higher above enemy
 	sprite.no_depth_test = true  # Always show in front of other objects
-	
-	# Add viewport to health bar scene
-	health_bar_scene.add_child(viewport)
 	health_bar_scene.add_child(sprite)
+	print(name + ": Added sprite")
+	
+	# Need to wait a frame for the viewport texture to be ready
+	await get_tree().process_frame
+	
+	# Set texture AFTER viewport is added to scene tree
+	sprite.texture = viewport.get_texture()
+	print(name + ": Set sprite texture")
 	
 	# Add health bar to the enemy
 	add_child(health_bar_scene)
 	health_bar = health_bar_scene
+	print(name + ": Health bar added to scene tree")
 	
-	# Start with healthbar hidden
-	health_bar.visible = false
+	# Start with healthbar hidden if at full health
+	if current_health < max_health:
+		health_bar.visible = true
+		print(name + ": Health bar visible because health < max")
+	else:
+		health_bar.visible = false
+		print(name + ": Health bar hidden because health = max")
+	
+	# Update the health bar
+	call_deferred("update_health_bar")
+
+func take_damage(amount: float):
+	if is_dead:
+		return
+	
+	damaged_timer = 0.3
+	
+	# Flash the enemy red
+	if has_node("skeleton_mage"):
+		play_hit_effect()
+	
+	# Reduce health
+	current_health -= amount
+	
+	# Show hit effect if it exists
+	if hit_effect_scene:
+		var hit_effect = hit_effect_scene.instantiate()
+		hit_effect.position = position + Vector3(0, 1.0, 0)
+		get_parent().add_child(hit_effect)
+	
+	# Play hit sound - simple approach instead of using AudioManager
+	if hit_sounds and hit_sounds.size() > 0:
+		var sound_index = randi() % hit_sounds.size()
+		if has_node("HitSound"):
+			if $HitSound is AudioStreamPlayer:
+				$HitSound.stream = hit_sounds[sound_index]
+				$HitSound.play()
+	
+	# Make sure health bar is visible and fully opaque when taking damage
+	if health_bar and current_health > 0 and current_health < max_health:
+		print(name + ": Taking damage, showing health bar")
+		health_bar.visible = true
+		var sprite = health_bar.find_child("Sprite", true, false)
+		if sprite:
+			sprite.modulate.a = 1.0
 	
 	# Update the health bar
 	update_health_bar()
-
-func take_damage(amount: float):
-	# Handle damage
-	print(name + " taking damage: " + str(amount))
 	
-	if !can_take_damage:
-		print(name + " on damage cooldown - not taking damage")
-		return
-		
-	can_take_damage = false
-	current_health -= amount
-	
-	# Interrupt current animation and play hit animation
-	play_animation("hit")
-	
-	# Show health bar when damaged
-	if health_bar:
-		health_bar.visible = true
-	
-	# Update health bar display
-	update_health_bar()
-	
-	# Update debug label
-	if has_node("DebugLabel"):
-		$DebugLabel.text = "HP: " + str(current_health)
-	
-	# Play hit effect/animation
-	play_hit_effect()
-	
-	# Debug output
-	print(name + " took " + str(amount) + " damage! Health: " + str(current_health))
-	
-	# Check if dead
+	# Die if health reaches 0
 	if current_health <= 0:
+		current_health = 0
 		die()
-	else:
-		# Start damage cooldown timer
-		var timer = get_tree().create_timer(damage_cooldown)
-		timer.timeout.connect(func(): 
-			can_take_damage = true
-			print(name + " can take damage again"))
 
 func update_health_bar():
-	if health_bar and health_bar.has_node("Viewport/HealthBarContainer/ProgressBar"):
-		var progress_bar = health_bar.get_node("Viewport/HealthBarContainer/ProgressBar")
+	if not health_bar or not health_bar.has_node("Viewport"):
+		return
 		
-		# Get current value for animation
-		var current_value = progress_bar.value
+	# Update the progress bar value
+	var viewport = health_bar.get_node("Viewport")
+	var progress_bar = viewport.find_child("ProgressBar", true, false)
+	
+	if progress_bar:
+		# Set the progress bar max value to match the enemy's max health
+		progress_bar.max_value = max_health
+		# Set the progress bar value to the current health
+		progress_bar.value = current_health
 		
-		# Create smooth animation for health changes
-		var tween = create_tween()
-		tween.tween_property(progress_bar, "value", current_health, 0.3).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		# Calculate health percentage for color updates
+		var health_percent = float(current_health) / float(max_health)
 		
-		# Change bar color based on health percentage
-		var fill_style = progress_bar.get_theme_stylebox("fill")
-		if fill_style is StyleBoxFlat:
-			var percent = float(current_health) / max_health
-			if percent < 0.3:
-				fill_style.bg_color = Color(1.0, 0.2, 0.2, 0.9)  # Bright red for low health
-			elif percent < 0.6:
-				fill_style.bg_color = Color(1.0, 0.5, 0.1, 0.9)  # Orange for medium health
+		# Get the fill style to update its color
+		var fill_style = progress_bar.get_theme_stylebox("fill") as StyleBoxFlat
+		if fill_style:
+			# Update fill color based on health
+			if health_percent < 0.25:
+				fill_style.bg_color = Color(1.0, 0.0, 0.0, 0.9)  # Red for low health
+			elif health_percent < 0.5:
+				fill_style.bg_color = Color(1.0, 0.5, 0.0, 0.9)  # Orange for medium health
 			else:
-				fill_style.bg_color = Color(0.8, 0.0, 0.0, 0.9)  # Red for high health
-				
-		# Hide health bar if full health or dead
-		if current_health >= max_health or current_health <= 0:
-			# Hide with a fade out animation
-			var fade_tween = create_tween()
-			fade_tween.tween_property(health_bar, "modulate:a", 0.0, 1.0)
-			fade_tween.tween_callback(func(): health_bar.visible = false)
+				fill_style.bg_color = Color(0.0, 1.0, 0.0, 0.9)  # Green for good health
+		
+		# Show health bar when health is not full
+		if current_health < max_health:
+			health_bar.visible = true
+			# Try to find the sprite if it exists
+			var sprite = health_bar.find_child("Sprite", true, false)
+			if sprite:
+				# Make sure it's visible
+				sprite.modulate.a = 1.0
 		else:
-			# Show with a fade in animation if not already visible
-			if not health_bar.visible:
-				health_bar.visible = true
-				health_bar.modulate.a = 0.0
-				var fade_tween = create_tween()
-				fade_tween.tween_property(health_bar, "modulate:a", 1.0, 0.3)
+			# Only hide the health bar if damage timer is also expired
+			if damaged_timer <= 0:
+				health_bar.visible = false
 
 func play_hit_effect():
 	# Flash the model red
@@ -520,7 +578,8 @@ func play_animation(anim_name: String):
 func die():
 	# Disable collision and physics
 	set_physics_process(false)
-	$CollisionShape3D.disabled = true
+	if has_node("CollisionShape3D"):
+		$CollisionShape3D.disabled = true
 	current_state = State.IDLE
 	
 	# Debug message
@@ -594,16 +653,68 @@ func die():
 		else:
 			await get_tree().create_timer(1.5).timeout
 		
-		# Fade out the model
-		var tween = create_tween()
-		tween.tween_property(model, "modulate:a", 0.0, 1.5)
-		tween.parallel().tween_property(self, "position:y", position.y - 0.5, 1.5)
+		# Fade out the model by modifying materials
+		var mesh_instances = []
+		find_mesh_instances(model, mesh_instances)
 		
-		# Wait for animation/effect to finish
-		await tween.finished
+		var fade_duration = 1.5
+		var start_time = Time.get_ticks_msec() / 1000.0
+		
+		# Apply initial transparent materials
+		for mesh in mesh_instances:
+			for i in range(mesh.get_surface_override_material_count()):
+				var current_material = mesh.get_surface_override_material(i)
+				if current_material:
+					var transparent_material = current_material.duplicate()
+					if transparent_material is StandardMaterial3D:
+						transparent_material.flags_transparent = true
+						transparent_material.albedo_color.a = 1.0
+						mesh.set_surface_override_material(i, transparent_material)
+		
+		# Create a timer to handle the fade animation
+		var fade_timer = Timer.new()
+		fade_timer.name = "FadeTimer"
+		fade_timer.wait_time = 0.05  # Update several times per second
+		add_child(fade_timer)
+		
+		# Create a function to update material alpha
+		var update_alpha = func():
+			var current_time = Time.get_ticks_msec() / 1000.0
+			var elapsed = current_time - start_time
+			var alpha = max(0, 1.0 - (elapsed / fade_duration))
+			
+			# Update all materials
+			for mesh in mesh_instances:
+				for i in range(mesh.get_surface_override_material_count()):
+					var material = mesh.get_surface_override_material(i)
+					if material is StandardMaterial3D:
+						material.albedo_color.a = alpha
+			
+			# Move down slightly
+			position.y -= 0.01
+			
+			# Stop when fully transparent
+			if alpha <= 0:
+				fade_timer.stop()
+				fade_timer.queue_free()
+		
+		# Connect timer to the update function
+		fade_timer.timeout.connect(update_alpha)
+		fade_timer.start()
+		
+		# Wait until the fade completes
+		await get_tree().create_timer(fade_duration).timeout
 	
 	# Remove from scene
 	queue_free()
+
+# Helper function to find all mesh instances in a node and its children
+func find_mesh_instances(node, results):
+	if node is MeshInstance3D:
+		results.append(node)
+		
+	for child in node.get_children():
+		find_mesh_instances(child, results)
 
 # Creates a visual effect to highlight where the gem will spawn
 func create_gem_spawn_effect():
@@ -651,13 +762,6 @@ func spawn_gem():
 			
 		print("Target spawn position: " + str(spawn_position))
 		
-		# Add the gem to the main scene
-		main_scene.add_child(gem)
-		print("Gem added to scene tree")
-		
-		# Set position after adding to scene
-		gem.global_position = spawn_position
-		
 		# Determine gem type - weighted random selection
 		var rng = RandomNumberGenerator.new()
 		rng.randomize()
@@ -688,19 +792,27 @@ func spawn_gem():
 				# 3% chance of yellow gem (luck - most rare)
 				gem_type = 4
 		
-		# Set the gem type
+		# Set properties before adding to scene
 		gem.gem_type = gem_type
 		
 		# Randomize gem value based on enemy strength and gem type
-		# Rarer gems are worth more
 		var base_value = 10 + (gem_type * 5)
 		gem.item_value = randi_range(base_value, base_value + 15)
 		
 		# Set effect power based on enemy level/difficulty
-		# For now use a simple formula, but this could be tied to enemy level
 		gem.effect_power = 1.0 + (gem_type * 0.2)
 		
-		# Apply the gem's properties based on its type
+		# Add the gem to the main scene
+		main_scene.add_child(gem)
+		print("Gem added to scene tree")
+		
+		# Set position after adding to scene
+		gem.global_position = spawn_position
+		
+		# Wait a frame to ensure the gem is properly initialized in the scene tree
+		await get_tree().process_frame
+		
+		# Now configure additional properties after the gem is in the tree
 		gem.update_gem_properties()
 		gem.apply_gem_material()
 		
