@@ -6,7 +6,7 @@
 height = 0.8
 radius = 0.3
 
-[node name="candles" type="StaticBody3D"]
+[node name="candles" type="StaticBody3D" groups=["pickup_items"]]
 
 [node name="candles" parent="." instance=ExtResource("1_u1lyg")]
 

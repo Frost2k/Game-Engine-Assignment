@@ -4,6 +4,45 @@
 
 extends CharacterBody3D
 
+@export_group("Pickup Settings")
+@export var pickup_radius : float = 2.0
+@export var input_pickup : String = "pickup"
+
+@onready var pickup_message: Label = $CanvasLayer/PickMessage # Adjust path as needed
+var pickup_message_timer := 0.0
+var pickup_message_duration := 1.5  
+
+var item_database = {
+	"keyring": {
+		"id": "keyring",
+		"name": "Keyring",
+		"description": "A small loop of keys.",
+		"value": 50,
+		"icon": null
+	},
+	"coin_sack": {
+		"id": "coin_sack",
+		"name": "Coin Sack",
+		"description": "A stack of gold coins.",
+		"value": 30,
+		"icon": null
+	},
+	"chair": {
+		"id": "chair",
+		"name": "Wooden Chair",
+		"description": "An old wooden chair.",
+		"value": 15,
+		"icon": null
+	},
+	"candles": {
+		"id": "candles",
+		"name": "Candles",
+		"description": "A few melted wax candles.",
+		"value": 10,
+		"icon": null
+	}
+}
+
 ## Can we move around?
 @export var can_move : bool = true
 ## Are we affected by gravity?
@@ -68,6 +107,7 @@ var mouse_captured : bool = false
 var look_rotation : Vector2
 var move_speed : float = 0.0
 var freeflying : bool = false
+var pickedObject
 
 # Combat variables
 var health : float = 100.0
@@ -169,6 +209,45 @@ func _ready() -> void:
 	if head:
 		look_rotation.y = rotation.y
 		look_rotation.x = head.rotation.x
+		
+func extract_item_data(item: Node) -> Variant:
+	# Assuming the item has these exported fields or properties
+	if item.has_variable("item_name") and item.has_variable("item_description"):
+		return {
+			"id": item.get("id") if item.has_variable("id") else "unknown",
+			"name": item.item_name,
+			"description": item.item_description,
+			"value": item.item_value if item.has_variable("item_value") else 0,
+			"icon": item.item_icon if item.has_variable("item_icon") else null
+		}
+	return null
+	
+func pick_up_item(item: Node):
+	var file_name := ""
+
+	if item.has_method("get_scene_file_path"):
+		file_name = item.get_scene_file_path().get_file().get_basename().to_lower().strip_edges()
+	else:
+		file_name = item.name.to_lower().strip_edges()
+
+	print("Trying to pick up: '" + file_name + "'")
+
+	if item_database.has(file_name):
+		var item_data = item_database[file_name]
+		if add_to_inventory(item_data):
+			show_pickup_message("Picked up: " + item_data.name)
+			item.queue_free()
+		else:
+			show_pickup_message("Inventory full! Could not pick up " + item_data.name)
+	else:
+		print("Item database keys: ", item_database.keys())
+		show_pickup_message("Can't pick up: " + file_name)
+	
+func show_pickup_message(message: String):
+	if pickup_message:
+		pickup_message.text = message
+		pickup_message.visible = true
+		pickup_message_timer = pickup_message_duration
 
 func _unhandled_input(event):
 	# Default input handling (existing code)
@@ -204,6 +283,12 @@ func _unhandled_input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_T and not event.is_echo():
 		print("TEST: Taking 50 damage")
 		take_damage(50.0)
+		
+	if Input.is_action_just_pressed(input_pickup):
+		var items = get_nearby_items()
+		if items.size() > 0:
+			for item in items:
+				pick_up_item(item)
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -529,3 +614,35 @@ func drop_item_from_inventory(item, index):
 			return true
 	
 	return false
+	
+func get_nearby_items() -> Array:
+	var nearby_items = []
+	var space_state = get_world_3d().direct_space_state
+	
+	# Create a small sphere shape for the detection radius
+	var sphere := SphereShape3D.new()
+	sphere.radius = pickup_radius
+	
+	# Use the shape in a PhysicsShapeQuery3D
+	var shape_query := PhysicsShapeQueryParameters3D.new()
+	shape_query.shape = sphere
+	shape_query.transform = Transform3D(Basis(), global_transform.origin)
+	shape_query.collide_with_areas = true
+	shape_query.collision_mask = 1  # Adjust if you use layers
+	
+	var result = space_state.intersect_shape(shape_query, 10)
+
+	for hit in result:
+		var obj = hit.get("collider")
+		if obj and obj.is_in_group("pickup_items"):
+			nearby_items.append(obj)
+
+	return nearby_items
+	
+func _process(delta):
+	if pickup_message.visible:
+		pickup_message_timer -= delta
+		if pickup_message_timer <= 0:
+			pickup_message.visible = false
+
+	

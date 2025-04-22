@@ -2,8 +2,8 @@
 
 [ext_resource type="Texture2D" uid="uid://cpwmw1tbfr5qp" path="res://assets/3d_game/sky_background/autumn_field_puresky_4k.hdr" id="1_7ta63"]
 [ext_resource type="PackedScene" uid="uid://bs72ogkvdd7d6" path="res://assets/proto_controller/proto_controller.tscn" id="1_puql2"]
-[ext_resource type="PackedScene" path="res://scenes/chest.tscn" id="3_wqqdc"]
-[ext_resource type="PackedScene" path="res://scenes/barrel.tscn" id="4_swewf"]
+[ext_resource type="PackedScene" uid="uid://nadr06b77nn0" path="res://scenes/chest.tscn" id="3_wqqdc"]
+[ext_resource type="PackedScene" uid="uid://54hebrpa6wnc" path="res://scenes/barrel.tscn" id="4_swewf"]
 [ext_resource type="PackedScene" uid="uid://doeknm64xkb1t" path="res://scenes/background/floor_stone.tscn" id="4_uldnp"]
 [ext_resource type="PackedScene" uid="uid://bakossnph2efh" path="res://scenes/background/floor_wood.tscn" id="5_kdvjw"]
 [ext_resource type="PackedScene" uid="uid://ibrlu5cvc4v5" path="res://scenes/background/wall_doorway.tscn" id="6_gp0w8"]
@@ -2453,6 +2453,15 @@ mesh = SubResource("PlaneMesh_d2w4v")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="MiniMap3D" type="MiniMap3D" parent="CanvasLayer"]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
 player_path = NodePath("../../ProtoController")
 cam_height = 5.0
 ortho_size = 20.0
@@ -2466,6 +2475,7 @@ offset_top = 20.0
 offset_right = -21.0
 offset_bottom = 160.0
 grow_horizontal = 0
+script = null
 
 [node name="Mage" parent="." instance=ExtResource("43_oy41f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3, 2.7, 30.7)
