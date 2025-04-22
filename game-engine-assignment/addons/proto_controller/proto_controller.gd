@@ -47,15 +47,15 @@ extends CharacterBody3D
 
 @export_group("Input Actions")
 ## Name of Input Action to move Left.
-@export var input_left : String = "ui_left"
+@export var input_left : String = "move_left"
 ## Name of Input Action to move Right.
-@export var input_right : String = "ui_right"
+@export var input_right : String = "move_right"
 ## Name of Input Action to move Forward.
-@export var input_forward : String = "ui_up"
+@export var input_forward : String = "move_forward"
 ## Name of Input Action to move Backward.
-@export var input_back : String = "ui_down"
+@export var input_back : String = "move_backward"
 ## Name of Input Action to Jump.
-@export var input_jump : String = "ui_accept"
+@export var input_jump : String = "jump"
 ## Name of Input Action to Sprint.
 @export var input_sprint : String = "sprint"
 ## Name of Input Action to toggle freefly mode.
@@ -170,7 +170,8 @@ func _ready() -> void:
 		look_rotation.y = rotation.y
 		look_rotation.x = head.rotation.x
 
-func _unhandled_input(event: InputEvent) -> void:
+func _unhandled_input(event):
+	# Default input handling (existing code)
 	if is_dead:
 		return
 		
@@ -198,6 +199,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Toggle inventory
 	if has_inventory and Input.is_action_just_pressed(input_inventory):
 		toggle_inventory()
+	
+	# Test: Press T key to take 50 damage
+	if event is InputEventKey and event.pressed and event.keycode == KEY_T and not event.is_echo():
+		print("TEST: Taking 50 damage")
+		take_damage(50.0)
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -309,8 +315,90 @@ func die():
 	can_freefly = false
 	
 	# Implement game over logic
-	await get_tree().create_timer(2.0).timeout
-	# You could add code here to show game over screen or restart
+	show_death_menu()
+
+## Show death menu with restart options
+func show_death_menu():
+	# Create a death menu if it doesn't exist
+	if !has_node("PlayerUI") or !get_node("PlayerUI").has_node("DeathMenu"):
+		var canvas_layer
+		if has_node("PlayerUI"):
+			canvas_layer = get_node("PlayerUI")
+		else:
+			canvas_layer = CanvasLayer.new()
+			canvas_layer.name = "PlayerUI"
+			add_child(canvas_layer)
+			
+		# Create the menu container
+		var menu = Control.new()
+		menu.name = "DeathMenu"
+		menu.set_anchors_preset(Control.PRESET_FULL_RECT)
+		menu.mouse_filter = Control.MOUSE_FILTER_STOP
+		canvas_layer.add_child(menu)
+		
+		# Dark background overlay
+		var overlay = ColorRect.new()
+		overlay.name = "DarkOverlay"
+		overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		overlay.color = Color(0, 0, 0, 0.7)
+		menu.add_child(overlay)
+		
+		# Death message
+		var title = Label.new()
+		title.name = "DeathTitle"
+		title.text = "YOU DIED"
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		title.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		title.position = Vector2(0, 150)
+		title.add_theme_font_size_override("font_size", 64)
+		title.add_theme_color_override("font_color", Color(0.8, 0.1, 0.1))
+		menu.add_child(title)
+		
+		# Container for buttons
+		var button_container = VBoxContainer.new()
+		button_container.name = "ButtonContainer"
+		button_container.set_anchors_preset(Control.PRESET_CENTER)
+		button_container.position = Vector2(0, 50)
+		button_container.custom_minimum_size = Vector2(200, 150)
+		# Use theme_override for separation in Godot 4
+		button_container.add_theme_constant_override("separation", 20)
+		button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+		menu.add_child(button_container)
+		
+		# Restart button
+		var restart_button = Button.new()
+		restart_button.name = "RestartButton"
+		restart_button.text = "RESTART"
+		restart_button.custom_minimum_size = Vector2(200, 50)
+		restart_button.pressed.connect(self.restart_game)
+		button_container.add_child(restart_button)
+		
+		# Quit button
+		var quit_button = Button.new()
+		quit_button.name = "QuitButton"
+		quit_button.text = "QUIT TO MENU"
+		quit_button.custom_minimum_size = Vector2(200, 50)
+		quit_button.pressed.connect(self.quit_to_menu)
+		button_container.add_child(quit_button)
+	
+	# Show menu and enable mouse
+	get_node("PlayerUI/DeathMenu").visible = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+## Restart the current game
+func restart_game():
+	# Hide death menu
+	if has_node("PlayerUI") and get_node("PlayerUI").has_node("DeathMenu"):
+		get_node("PlayerUI/DeathMenu").visible = false
+	
+	# Reload current scene
+	get_tree().reload_current_scene()
+
+## Quit to the main menu
+func quit_to_menu():
+	# Return to start menu scene
+	get_tree().change_scene_to_file("res://Scenes/start_menu.tscn")
 
 ## Shoot a projectile
 func shoot():
