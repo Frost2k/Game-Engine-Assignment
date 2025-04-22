@@ -33,3 +33,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
 [node name="Camera3D" type="Camera3D" parent="Head"]
 
 [node name="ProjectileLauncher" parent="Head/Camera3D" instance=ExtResource("2_2d5hu")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="PickMessage" type="Label" parent="CanvasLayer"]
+visible = false
+anchors_preset = -1
+anchor_left = 0.25
+anchor_right = 0.75
+offset_top = 50.0
+theme_override_font_sizes/font_size = 32
