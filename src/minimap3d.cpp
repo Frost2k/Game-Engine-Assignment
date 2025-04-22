@@ -201,7 +201,7 @@ void MiniMap3D::_draw() {
     
     // Debug player position periodically
     if (get_tree()->get_frame() % 60 == 0) {
-        UtilityFunctions::print("Player position: (", player_pos.x, ", ", player_pos.y, ", ", player_pos.z, ")");
+       // UtilityFunctions::print("Player position: (", player_pos.x, ", ", player_pos.y, ", ", player_pos.z, ")");
     }
     
     // Size of the viewport
@@ -243,7 +243,7 @@ void MiniMap3D::_draw() {
     
     // Debug enemy count periodically
     if (get_tree()->get_frame() % 60 == 0) {
-        UtilityFunctions::print("Found ", enemies.size(), " enemies in group '", enemy_group, "'");
+        //UtilityFunctions::print("Found ", enemies.size(), " enemies in group '", enemy_group, "'");
         
         // If no enemies found, try to scan for them
         if (enemies.size() == 0) {
@@ -251,7 +251,7 @@ void MiniMap3D::_draw() {
             if (root_node) {
                 _scan_for_enemies(root_node, 0);
                 enemies = get_tree()->get_nodes_in_group(enemy_group);
-                UtilityFunctions::print("After scan: Found ", enemies.size(), " enemies in group '", enemy_group, "'");
+                //UtilityFunctions::print("After scan: Found ", enemies.size(), " enemies in group '", enemy_group, "'");
             }
         }
     }
@@ -278,10 +278,10 @@ void MiniMap3D::_draw() {
         
         // Debug enemy positions periodically
         if (get_tree()->get_frame() % 120 == 0) {
-            UtilityFunctions::print("Enemy ", i, ": ", enemy->get_name(), " at position (", 
-                            enemy_pos.x, " (left/right), ", enemy_pos.y, " (up/down), ", enemy_pos.z, " (forward/backward))");
-            UtilityFunctions::print("  Offset from player: X=", enemy_offset.x, " (left/right), Z=", enemy_offset.z, " (forward/backward)");
-            UtilityFunctions::print("  Minimap position: (", enemy_minimap_pos.x, ", ", enemy_minimap_pos.y, ")");
+            //UtilityFunctions::print("Enemy ", i, ": ", enemy->get_name(), " at position (", 
+            //                enemy_pos.x, " (left/right), ", enemy_pos.y, " (up/down), ", enemy_pos.z, " (forward/backward))");
+            //UtilityFunctions::print("  Offset from player: X=", enemy_offset.x, " (left/right), Z=", enemy_offset.z, " (forward/backward)");
+            //UtilityFunctions::print("  Minimap position: (", enemy_minimap_pos.x, ", ", enemy_minimap_pos.y, ")");
         }
         
         // Check if in viewport bounds
@@ -385,7 +385,7 @@ void MiniMap3D::_debug_enemy_groups() {
     
     // Try alternative group names if none found in specified group
     if (list.size() == 0) {
-        UtilityFunctions::print("MiniMap3D: No enemies found in group '", enemy_group, "'. Trying alternatives...");
+       // UtilityFunctions::print("MiniMap3D: No enemies found in group '", enemy_group, "'. Trying alternatives...");
         
         // List of possible enemy group names to try
         const char* possible_groups[] = {"Enemies", "enemy", "enemies", "Monster", "Monsters", "monster", "monsters"};
@@ -393,7 +393,7 @@ void MiniMap3D::_debug_enemy_groups() {
         for (const char* group : possible_groups) {
             Array test_list = get_tree()->get_nodes_in_group(group);
             if (test_list.size() > 0) {
-                UtilityFunctions::print("Found ", test_list.size(), " enemies in alternative group: '", group, "'");
+                //UtilityFunctions::print("Found ", test_list.size(), " enemies in alternative group: '", group, "'");
                 enemy_group = group; // Update to use this group
                 list = test_list;
                 break;
@@ -401,7 +401,7 @@ void MiniMap3D::_debug_enemy_groups() {
         }
     }
     
-    UtilityFunctions::print("MiniMap3D: Found ", list.size(), " enemies in group '", enemy_group, "'");
+    //UtilityFunctions::print("MiniMap3D: Found ", list.size(), " enemies in group '", enemy_group, "'");
     
     // Manually add skeleton_mage nodes if they're not in the group
     Node* root_node = get_tree()->get_current_scene();
@@ -410,7 +410,7 @@ void MiniMap3D::_debug_enemy_groups() {
         
         // Get the updated list
         list = get_tree()->get_nodes_in_group(enemy_group);
-        UtilityFunctions::print("After scan: Found ", list.size(), " enemies in group '", enemy_group, "'");
+       // UtilityFunctions::print("After scan: Found ", list.size(), " enemies in group '", enemy_group, "'");
     }
     
     // List detailed information about each enemy
@@ -420,10 +420,10 @@ void MiniMap3D::_debug_enemy_groups() {
             Node3D *enemy = Object::cast_to<Node3D>(node);
             if (enemy) {
                 Vector3 pos = enemy->get_global_position();
-                UtilityFunctions::print("Enemy ", i, ": ", node->get_name(), " at position (", 
-                                        pos.x, ", ", pos.y, ", ", pos.z, ")");
+               // UtilityFunctions::print("Enemy ", i, ": ", node->get_name(), " at position (", 
+               //                         pos.x, ", ", pos.y, ", ", pos.z, ")");
             } else {
-                UtilityFunctions::print("Enemy ", i, ": ", node->get_name(), " (not a Node3D)");
+                //UtilityFunctions::print("Enemy ", i, ": ", node->get_name(), " (not a Node3D)");
             }
         }
     }
@@ -434,13 +434,13 @@ void MiniMap3D::_debug_enemy_groups() {
         Node3D *player3D = Object::cast_to<Node3D>(player);
         if (player3D) {
             Vector3 pos = player3D->get_global_position();
-            UtilityFunctions::print("Found player at path: ", player_path, " at position (", 
-                                    pos.x, ", ", pos.y, ", ", pos.z, ")");
+            //UtilityFunctions::print("Found player at path: ", player_path, " at position (", 
+            //                        pos.x, ", ", pos.y, ", ", pos.z, ")");
         } else {
-            UtilityFunctions::print("Found player at path: ", player_path, " (not a Node3D)");
+            //UtilityFunctions::print("Found player at path: ", player_path, " (not a Node3D)");
         }
     } else {
-        UtilityFunctions::print("WARNING: Player not found at path: ", player_path);
+        //UtilityFunctions::print("WARNING: Player not found at path: ", player_path);
     }
 }
 
@@ -457,21 +457,21 @@ void MiniMap3D::_scan_for_enemies(Node* node, int depth) {
         Node3D* potential_enemy = Object::cast_to<Node3D>(node);
         Vector3 pos = potential_enemy->get_global_position();
         
-        UtilityFunctions::print("  [Potential enemy found] ", node->get_path(), " at (", 
-                                pos.x, ", ", pos.y, ", ", pos.z, ")");
+        //UtilityFunctions::print("  [Potential enemy found] ", node->get_path(), " at (", 
+        //                        pos.x, ", ", pos.y, ", ", pos.z, ")");
         
         // Check for parent transforms that might affect positioning
         Node* parent = potential_enemy->get_parent();
         if (parent && Object::cast_to<Node3D>(parent)) {
             Node3D* parent3D = Object::cast_to<Node3D>(parent);
             Vector3 parent_pos = parent3D->get_global_position();
-            UtilityFunctions::print("    Parent: ", parent->get_name(), " at (", 
-                                   parent_pos.x, ", ", parent_pos.y, ", ", parent_pos.z, ")");
+            //UtilityFunctions::print("    Parent: ", parent->get_name(), " at (", 
+           //                        parent_pos.x, ", ", parent_pos.y, ", ", parent_pos.z, ")");
             
             // Check if there's a significant transform offset
             Vector3 local_pos = potential_enemy->get_position();
-            UtilityFunctions::print("    Local position: (", 
-                                   local_pos.x, ", ", local_pos.y, ", ", local_pos.z, ")");
+            //UtilityFunctions::print("    Local position: (", 
+           //                        local_pos.x, ", ", local_pos.y, ", ", local_pos.z, ")");
         }
         
         // Add this to our enemy group automatically

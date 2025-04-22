@@ -1,0 +1,161 @@
+[gd_scene load_steps=4 format=3 uid="uid://031dch76leqy"]
+
+[ext_resource type="Script" path="res://scripts/inventory_ui.gd" id="1_q3pxq"]
+[ext_resource type="PackedScene" uid="uid://bxh05i4ri538n" path="res://scenes/inventory_slot.tscn" id="2_fpcvq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n6mce"]
+bg_color = Color(0.101961, 0.101961, 0.14902, 0.941176)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.498039, 0.403922, 0.2, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.501961)
+shadow_size = 8
+
+[node name="InventoryUI" type="CanvasLayer"]
+script = ExtResource("1_q3pxq")
+slot_scene = ExtResource("2_fpcvq")
+
+[node name="Background" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.235294)
+
+[node name="Panel" type="Panel" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -200.0
+offset_right = 300.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_n6mce")
+
+[node name="Title" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 20
+text = "INVENTORY"
+horizontal_alignment = 1
+
+[node name="ItemGrid" type="GridContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 50.0
+offset_right = -50.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 5
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 40.0
+grow_horizontal = 0
+text = "X"
+
+[node name="DetailsPanel" type="Panel" parent="."]
+visible = false
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -125.0
+offset_right = -50.0
+offset_bottom = 125.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="ItemName" type="Label" parent="DetailsPanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "Item Name"
+horizontal_alignment = 1
+
+[node name="ItemDescription" type="Label" parent="DetailsPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 50.0
+offset_right = -10.0
+offset_bottom = 150.0
+grow_horizontal = 2
+text = "Item description goes here. This is what the item does and how it works."
+autowrap_mode = 2
+
+[node name="ItemValue" type="Label" parent="DetailsPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 160.0
+offset_right = -10.0
+offset_bottom = 190.0
+grow_horizontal = 2
+text = "Value: 0"
+
+[node name="UseButton" type="Button" parent="DetailsPanel"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -50.0
+offset_right = 90.0
+offset_bottom = -20.0
+grow_vertical = 0
+text = "USE"
+
+[node name="DropButton" type="Button" parent="DetailsPanel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -90.0
+offset_top = -50.0
+offset_right = -30.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "DROP"
+
+[connection signal="pressed" from="Panel/CloseButton" to="." method="close"]
