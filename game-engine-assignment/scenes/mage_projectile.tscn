@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3 uid="uid://bjpvs8d3fxbe3"]
+
+[ext_resource type="Script" path="res://Scripts/mage_projectile.gd" id="1_lchq5"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_aqt5q"]
+radius = 0.3
+height = 0.6
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_qsbcy"]
+radius = 0.4
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_t4s8c"]
+emission_shape = 1
+emission_sphere_radius = 0.2
+direction = Vector3(0, 0, 1)
+spread = 10.0
+initial_velocity_min = 0.1
+initial_velocity_max = 0.5
+gravity = Vector3(0, 0, 0)
+scale_min = 0.1
+scale_max = 0.3
+color = Color(0.803922, 0.388235, 0.94902, 1)
+hue_variation_min = -0.1
+hue_variation_max = 0.1
+
+[sub_resource type="SphereMesh" id="SphereMesh_tl5a0"]
+radius = 0.05
+height = 0.1
+
+[node name="MageProjectile" type="Area3D"]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_lchq5")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_aqt5q")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_qsbcy")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+amount = 32
+lifetime = 0.5
+randomness = 0.2
+process_material = SubResource("ParticleProcessMaterial_t4s8c")
+draw_pass_1 = SubResource("SphereMesh_tl5a0")

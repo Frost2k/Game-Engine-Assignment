@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3 uid="uid://ko1vos4th1wq"]
+
+[ext_resource type="Script" path="res://Scripts/enemy3d.gd" id="1_iqh72"]
+[ext_resource type="PackedScene" uid="uid://c8prxxp3v2t4y" path="res://assets/3d_game/skeleton/skeleton_mage.glb" id="2_7a4vp"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_lc5bp"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_3m0fb"]
+
+[node name="Mage" type="CharacterBody3D" groups=["Enemy"]]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_iqh72")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_lc5bp")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+visible = false
+mesh = SubResource("CapsuleMesh_3m0fb")
+skeleton = NodePath("../CollisionShape3D")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_height_offset = 0.5
+
+[node name="AttackCooldown" type="Timer" parent="."]
+wait_time = 1.5
+one_shot = true
+
+[node name="skeleton_mage" parent="." instance=ExtResource("2_7a4vp")]
+
+[node name="HitSound" type="AudioStreamPlayer3D" parent="."]
+volume_db = -10.0
+
+[node name="DeathSound" type="AudioStreamPlayer3D" parent="."]
+volume_db = -5.0
+
+[node name="DebugLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+billboard = 1
+text = "Enemy"
