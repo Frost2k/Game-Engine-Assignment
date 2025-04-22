@@ -54,7 +54,7 @@ var fire_timer
 var current_health: float = 100.0
 var health_bar
 
-func _ready():
+func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	
 	# Initialize the launcher position if needed
@@ -77,12 +77,16 @@ func _ready():
 	else:
 		fire_timer = $FireTimer
 	
-	# Setup health UI
-	if has_node("HealthBar"):
-		health_bar = $HealthBar
-		update_health_ui()
-	else:
-		push_warning("HealthBar node missing - health UI won't update")
+	# Setup health UI with fancy style
+	setup_stylish_health_ui()
+	
+	# Initialize health
+	current_health = max_health
+	update_health_ui()
+	
+	# Force health UI to appear by calling update
+	if health_bar:
+		health_bar.value = current_health
 
 func _unhandled_input(event):
 	if event is InputEventMouseMotion:
@@ -199,16 +203,181 @@ func shoot():
 	if has_node("ShootSound"):
 		$ShootSound.play()
 
+func setup_stylish_health_ui():
+	# Create a CanvasLayer for the UI if it doesn't exist
+	var canvas_layer
+	if has_node("PlayerUI"):
+		canvas_layer = $PlayerUI
+	else:
+		canvas_layer = CanvasLayer.new()
+		canvas_layer.name = "PlayerUI"
+		add_child(canvas_layer)
+	
+	# Check if we already have a health bar
+	if canvas_layer.has_node("HealthBarContainer"):
+		health_bar = canvas_layer.get_node("HealthBarContainer/HealthBar")
+		return
+	
+	# Create a control container for health UI
+	var container = Control.new()
+	container.name = "HealthBarContainer"
+	container.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	container.position = Vector2(20, 20)
+	container.size = Vector2(300, 60)
+	canvas_layer.add_child(container)
+	
+	# Create background panel with fantasy style
+	var panel = Panel.new()
+	panel.name = "Background"
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	
+	# Style the panel
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.1, 0.1, 0.12, 0.7)  # Dark background
+	panel_style.border_width_left = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(0.3, 0.5, 0.7, 0.8)  # Blue-ish border for player (different from enemy)
+	panel_style.corner_radius_top_left = 5
+	panel_style.corner_radius_top_right = 5
+	panel_style.corner_radius_bottom_right = 5
+	panel_style.corner_radius_bottom_left = 5
+	panel_style.shadow_color = Color(0, 0, 0, 0.4)
+	panel_style.shadow_size = 5
+	panel.add_theme_stylebox_override("panel", panel_style)
+	container.add_child(panel)
+	
+	# Add health icon (optional)
+	var health_icon = Label.new()
+	health_icon.name = "HealthIcon"
+	health_icon.text = "♥"  # Heart symbol
+	health_icon.position = Vector2(10, 5)
+	health_icon.add_theme_font_size_override("font_size", 25)
+	health_icon.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
+	container.add_child(health_icon)
+	
+	# Add health label
+	var health_label = Label.new()
+	health_label.name = "HealthLabel"
+	health_label.text = "HEALTH"
+	health_label.position = Vector2(40, 8)
+	health_label.add_theme_font_size_override("font_size", 16)
+	health_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
+	container.add_child(health_label)
+	
+	# Create the progress bar
+	var progress = ProgressBar.new()
+	progress.name = "HealthBar"
+	progress.max_value = max_health
+	progress.value = max_health
+	progress.show_percentage = false
+	progress.position = Vector2(10, 35)
+	progress.size = Vector2(280, 20)
+	
+	# Style the progress bar with a gradient from dark blue to bright blue (player colors)
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.2, 0.6, 1.0, 0.9)  # Bright blue
+	fill_style.border_width_left = 0
+	fill_style.border_width_top = 0
+	fill_style.border_width_right = 0
+	fill_style.border_width_bottom = 0
+	fill_style.corner_radius_top_left = 3
+	fill_style.corner_radius_top_right = 3
+	fill_style.corner_radius_bottom_right = 3
+	fill_style.corner_radius_bottom_left = 3
+	
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.05, 0.1, 0.2, 0.8)  # Dark blue background
+	bg_style.border_width_left = 1
+	bg_style.border_width_top = 1
+	bg_style.border_width_right = 1
+	bg_style.border_width_bottom = 1
+	bg_style.border_color = Color(0.3, 0.3, 0.5, 0.5)  # Subtle border
+	bg_style.corner_radius_top_left = 3
+	bg_style.corner_radius_top_right = 3
+	bg_style.corner_radius_bottom_right = 3
+	bg_style.corner_radius_bottom_left = 3
+	
+	progress.add_theme_stylebox_override("fill", fill_style)
+	progress.add_theme_stylebox_override("background", bg_style)
+	container.add_child(progress)
+	
+	# Store reference to health bar
+	health_bar = progress
+	
+	# Explicitly set initial state
+	update_health_ui()
+
+func update_health_ui():
+	if !health_bar:
+		return
+		
+	# Get current value for animation
+	var current_value = health_bar.value
+	
+	# Create smooth animation for health changes
+	var tween = create_tween()
+	tween.tween_property(health_bar, "value", current_health, 0.3).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+	
+	# Update health label color based on health percentage
+	if has_node("PlayerUI/HealthBarContainer/HealthLabel"):
+		var label = get_node("PlayerUI/HealthBarContainer/HealthLabel")
+		var percent = int((float(current_health) / max_health) * 100)
+		
+		# Change text color based on health percentage
+		if percent < 30:
+			label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))  # Red for low health
+		elif percent < 60:
+			label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.2))  # Orange for medium health
+		else:
+			label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))  # Blue for high health
+			
+	# Also update fill color
+	if health_bar:
+		var fill_style = health_bar.get_theme_stylebox("fill")
+		if fill_style is StyleBoxFlat:
+			var percent = float(current_health) / max_health
+			if percent < 0.3:
+				fill_style.bg_color = Color(0.9, 0.2, 0.2, 0.9)  # Red for low health
+			elif percent < 0.6:
+				fill_style.bg_color = Color(0.9, 0.6, 0.1, 0.9)  # Orange for medium health
+			else:
+				fill_style.bg_color = Color(0.2, 0.6, 1.0, 0.9)  # Blue for high health
+	
+	# Play damage effect if health decreased
+	if current_health < current_value:
+		play_damage_effect()
+
+func play_damage_effect():
+	# Flash screen red when taking damage
+	if has_node("PlayerUI"):
+		var canvas_layer = $PlayerUI
+		
+		# Create damage flash overlay if it doesn't exist
+		if !canvas_layer.has_node("DamageFlash"):
+			var flash = ColorRect.new()
+			flash.name = "DamageFlash"
+			flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+			flash.color = Color(0.8, 0, 0, 0)  # Start transparent
+			canvas_layer.add_child(flash)
+		
+		# Flash the overlay
+		var flash = canvas_layer.get_node("DamageFlash")
+		var tween = create_tween()
+		tween.tween_property(flash, "color", Color(0.8, 0, 0, 0.3), 0.05)
+		tween.tween_property(flash, "color", Color(0.8, 0, 0, 0), 0.2)
+
 func take_damage(amount: float):
 	current_health -= amount
 	if current_health <= 0:
 		current_health = 0
 		die()
+	
+	# Update health UI
 	update_health_ui()
-
-func update_health_ui():
-	if health_bar:
-		health_bar.value = current_health
+	
+	print("Player took damage! Health: ", current_health)
 
 func die():
 	# Implement death behavior here

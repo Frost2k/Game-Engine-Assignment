@@ -141,6 +141,10 @@ func _physics_process(delta):
 		_process_wander_state(delta)
 	
 	move_and_slide()
+	
+	# Check for collisions with walls or objects (after move_and_slide)
+	if is_on_wall() and (current_state == State.WANDER or current_state == State.CHASE):
+		_handle_obstacle_collision()
 
 func _process_chase_state(delta):
 	# Calculate direction to player
@@ -254,36 +258,92 @@ func setup_health_bar():
 	var health_bar_scene = Node3D.new()
 	health_bar_scene.name = "HealthBar3D"
 	
-	# Create viewport for the health bar
+	# Create viewport for the health bar - doubled size
 	var viewport = SubViewport.new()
 	viewport.name = "Viewport"
-	viewport.size = Vector2(100, 10)
+	viewport.size = Vector2(300, 30)  # Wider but thinner (no label needed)
 	viewport.transparent_bg = true
 	viewport.disable_3d = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
 	
-	# Create the progress bar
+	# Create a control node to hold all UI elements
+	var control = Control.new()
+	control.name = "HealthBarContainer"
+	control.set_anchors_preset(Control.PRESET_FULL_RECT)
+	control.size = Vector2(300, 30)
+	
+	# Create background panel with fantasy style
+	var panel = Panel.new()
+	panel.name = "Background"
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	
+	# Style the panel
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.1, 0.1, 0.12, 0.7)  # Dark background
+	panel_style.border_width_left = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(0.5, 0.4, 0.2, 0.8)  # Gold-ish border
+	panel_style.corner_radius_top_left = 3
+	panel_style.corner_radius_top_right = 3
+	panel_style.corner_radius_bottom_right = 3
+	panel_style.corner_radius_bottom_left = 3
+	panel_style.shadow_color = Color(0, 0, 0, 0.3)
+	panel_style.shadow_size = 4
+	panel.add_theme_stylebox_override("panel", panel_style)
+	
+	# Create the progress bar - now fills most of the container
 	var progress = ProgressBar.new()
 	progress.name = "ProgressBar"
 	progress.max_value = max_health
 	progress.value = current_health
-	progress.size = Vector2(100, 10)
+	progress.size = Vector2(280, 20)
+	progress.position = Vector2(10, 5)  # Centered
 	progress.show_percentage = false
 	
-	# Style the progress bar
-	progress.add_theme_color_override("fill_bg_color", Color(0.2, 0.2, 0.2, 0.8))
-	progress.add_theme_color_override("fill_color", Color(0.9, 0.1, 0.1, 0.9))
+	# Style the progress bar with a gradient from dark red to bright red
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.8, 0.0, 0.0, 0.9)  # Bright red
+	fill_style.border_width_left = 0
+	fill_style.border_width_top = 0
+	fill_style.border_width_right = 0
+	fill_style.border_width_bottom = 0
+	fill_style.corner_radius_top_left = 2
+	fill_style.corner_radius_top_right = 2
+	fill_style.corner_radius_bottom_right = 2
+	fill_style.corner_radius_bottom_left = 2
 	
-	# Add progress bar to viewport
-	viewport.add_child(progress)
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.2, 0.0, 0.0, 0.8)  # Dark red background
+	bg_style.border_width_left = 1
+	bg_style.border_width_top = 1
+	bg_style.border_width_right = 1
+	bg_style.border_width_bottom = 1
+	bg_style.border_color = Color(0.3, 0.3, 0.3, 0.5)  # Subtle border
+	bg_style.corner_radius_top_left = 2
+	bg_style.corner_radius_top_right = 2
+	bg_style.corner_radius_bottom_right = 2
+	bg_style.corner_radius_bottom_left = 2
 	
-	# Create sprite to display the viewport texture
+	progress.add_theme_stylebox_override("fill", fill_style)
+	progress.add_theme_stylebox_override("background", bg_style)
+	
+	# Add UI elements to control
+	control.add_child(panel)
+	control.add_child(progress)
+	
+	# Add control to viewport
+	viewport.add_child(control)
+	
+	# Create sprite to display the viewport texture - double the size and much higher
 	var sprite = Sprite3D.new()
 	sprite.name = "Sprite"
 	sprite.texture = viewport.get_texture()
-	sprite.pixel_size = 0.01
+	sprite.pixel_size = 0.007  # Increased size
 	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sprite.position = Vector3(0, 1.5, 0)  # Position above enemy
+	sprite.position = Vector3(0, 3.5, 0)  # Positioned much higher above enemy
+	sprite.no_depth_test = true  # Always show in front of other objects
 	
 	# Add viewport to health bar scene
 	health_bar_scene.add_child(viewport)
@@ -292,6 +352,9 @@ func setup_health_bar():
 	# Add health bar to the enemy
 	add_child(health_bar_scene)
 	health_bar = health_bar_scene
+	
+	# Start with healthbar hidden
+	health_bar.visible = false
 	
 	# Update the health bar
 	update_health_bar()
@@ -338,13 +401,40 @@ func take_damage(amount: float):
 			print(name + " can take damage again"))
 
 func update_health_bar():
-	if health_bar and health_bar.has_node("Viewport/ProgressBar"):
-		var progress_bar = health_bar.get_node("Viewport/ProgressBar")
-		progress_bar.value = current_health
+	if health_bar and health_bar.has_node("Viewport/HealthBarContainer/ProgressBar"):
+		var progress_bar = health_bar.get_node("Viewport/HealthBarContainer/ProgressBar")
 		
-		# Hide health bar if full health
-		if current_health >= max_health:
-			health_bar.visible = false
+		# Get current value for animation
+		var current_value = progress_bar.value
+		
+		# Create smooth animation for health changes
+		var tween = create_tween()
+		tween.tween_property(progress_bar, "value", current_health, 0.3).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		
+		# Change bar color based on health percentage
+		var fill_style = progress_bar.get_theme_stylebox("fill")
+		if fill_style is StyleBoxFlat:
+			var percent = float(current_health) / max_health
+			if percent < 0.3:
+				fill_style.bg_color = Color(1.0, 0.2, 0.2, 0.9)  # Bright red for low health
+			elif percent < 0.6:
+				fill_style.bg_color = Color(1.0, 0.5, 0.1, 0.9)  # Orange for medium health
+			else:
+				fill_style.bg_color = Color(0.8, 0.0, 0.0, 0.9)  # Red for high health
+				
+		# Hide health bar if full health or dead
+		if current_health >= max_health or current_health <= 0:
+			# Hide with a fade out animation
+			var fade_tween = create_tween()
+			fade_tween.tween_property(health_bar, "modulate:a", 0.0, 1.0)
+			fade_tween.tween_callback(func(): health_bar.visible = false)
+		else:
+			# Show with a fade in animation if not already visible
+			if not health_bar.visible:
+				health_bar.visible = true
+				health_bar.modulate.a = 0.0
+				var fade_tween = create_tween()
+				fade_tween.tween_property(health_bar, "modulate:a", 1.0, 0.3)
 
 func play_hit_effect():
 	# Flash the model red
@@ -468,3 +558,55 @@ func die():
 	
 	# Remove from scene
 	queue_free() 
+
+func _handle_obstacle_collision():
+	# Debug message
+	print(name + " hit an obstacle, changing direction")
+	
+	# Play a brief reaction animation if available
+	play_animation("hit")
+	
+	# If chasing player, take a small step back before trying a different path
+	if current_state == State.CHASE and player != null:
+		# Step back to prevent getting stuck
+		var back_dir = -velocity.normalized()
+		velocity = back_dir * speed * 0.5
+		move_and_slide()
+		
+		# Calculate a new direction to the player that avoids the obstacle
+		var direct_to_player = (player.global_position - global_position).normalized()
+		
+		# Try finding alternative directions by rotating the vector
+		var alternative_directions = [
+			Quaternion(Vector3.UP, PI/4).normalized() * direct_to_player,
+			Quaternion(Vector3.UP, -PI/4).normalized() * direct_to_player,
+			Quaternion(Vector3.UP, PI/2).normalized() * direct_to_player,
+			Quaternion(Vector3.UP, -PI/2).normalized() * direct_to_player
+		]
+		
+		# Cast rays to find a clear path
+		var clear_direction = direct_to_player
+		for dir in alternative_directions:
+			var space_state = get_world_3d().direct_space_state
+			var query = PhysicsRayQueryParameters3D.create(
+				global_position + Vector3(0, 1, 0),  # Start ray from head level
+				global_position + Vector3(0, 1, 0) + dir * 3.0
+			)
+			var result = space_state.intersect_ray(query)
+			
+			# If no obstacle hit, this is a clear direction
+			if result.is_empty():
+				clear_direction = dir
+				break
+		
+		# Apply the new direction
+		target_position = global_position + clear_direction * 5.0
+		
+	# If wandering, just pick a new random location
+	else:
+		# Choose a new random wandering target
+		_start_wandering()
+		
+		# Add a small delay before moving again
+		velocity = Vector3.ZERO
+		await get_tree().create_timer(0.5).timeout 
