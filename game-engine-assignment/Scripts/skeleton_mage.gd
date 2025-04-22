@@ -20,6 +20,10 @@ var is_chasing : bool = false
 @onready var healthbar = $HealthBar
 @onready var attack_timer = $AttackTimer
 @onready var animation_player = $AnimationPlayer
+@onready var mesh_instance = $skeleton_mage if has_node("skeleton_mage") else get_node(".")
+
+# Original material color for resetting after effects
+var original_color = Color.WHITE
 
 func _ready():
 	# Make sure enemy is in the Enemy group for minimap
@@ -44,6 +48,59 @@ func _ready():
 		healthbar.max_value = max_health
 		healthbar.value = max_health
 		healthbar.visible = false
+		
+	# Store original material color if available
+	store_original_material()
+
+# Store the original material color for later resets
+func store_original_material():
+	# Check direct mesh instance
+	if mesh_instance and mesh_instance is MeshInstance3D and mesh_instance.get_surface_override_material(0):
+		var material = mesh_instance.get_surface_override_material(0)
+		if material is BaseMaterial3D:
+			original_color = material.albedo_color
+	
+	# If not found, check children for mesh instances
+	if original_color == Color.WHITE:
+		for child in get_children():
+			if child is MeshInstance3D and child.get_surface_override_material(0):
+				var material = child.get_surface_override_material(0)
+				if material is BaseMaterial3D:
+					original_color = material.albedo_color
+					mesh_instance = child
+					break
+
+# Change mesh color for visual effects
+func set_mesh_color(color: Color):
+	# First try to find a MeshInstance3D
+	var target_mesh = null
+	
+	if mesh_instance and mesh_instance is MeshInstance3D:
+		target_mesh = mesh_instance
+	else:
+		# Search for mesh in children
+		for child in get_children():
+			if child is MeshInstance3D:
+				target_mesh = child
+				break
+	
+	# Apply color change if mesh found
+	if target_mesh:
+		# Check if the mesh already has a material
+		var material = null
+		if target_mesh.get_surface_override_material(0):
+			material = target_mesh.get_surface_override_material(0).duplicate()
+		else:
+			material = StandardMaterial3D.new()
+		
+		# Apply new color
+		if material is BaseMaterial3D:
+			material.albedo_color = color
+			target_mesh.set_surface_override_material(0, material)
+	
+	# If no mesh, print debug info
+	else:
+		print(name, " could not find a mesh to change color")
 
 func _physics_process(delta):
 	if is_dead:
@@ -77,10 +134,10 @@ func _physics_process(delta):
 			if animation_player and animation_player.has_animation("attack"):
 				animation_player.play("attack")
 			else:
-				# Simple visual feedback if no animation
-				modulate = Color.RED
+				# Visual feedback with material change instead of modulate
+				set_mesh_color(Color.RED)
 				await get_tree().create_timer(0.2).timeout
-				modulate = Color.WHITE
+				set_mesh_color(original_color)
 		else:
 			# Move toward player
 			var direction = (player_ref.global_position - global_position).normalized()
@@ -114,10 +171,10 @@ func take_damage(amount):
 	if animation_player and animation_player.has_animation("hit"):
 		animation_player.play("hit")
 	else:
-		# Simple visual feedback if no animation
-		modulate = Color.RED
+		# Visual feedback with material change instead of modulate
+		set_mesh_color(Color.RED)
 		await get_tree().create_timer(0.2).timeout
-		modulate = Color.WHITE
+		set_mesh_color(original_color)
 	
 	print(name, " took damage! Health: ", health)
 	
@@ -149,8 +206,9 @@ func die():
 		animation_player.play("death")
 		await animation_player.animation_finished
 	else:
-		# Simple death effect if no animation
-		modulate = Color(0.5, 0.5, 0.5, 0.5)
+		# Use material for death effect instead of modulate
+		var fade_color = Color(0.5, 0.5, 0.5, 0.5)
+		set_mesh_color(fade_color)
 	
 	# Disable collision
 	for child in get_children():

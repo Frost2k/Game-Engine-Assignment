@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c4m8f4d8qyp7d"]
 
-[ext_resource type="Script" path="res://scripts/gem_ui.gd" id="1_n5vyb"]
+[ext_resource type="Script" path="res://Scripts/gem_ui.gd" id="1_n5vyb"]
 
 [node name="GemUI" type="Control"]
 layout_mode = 3

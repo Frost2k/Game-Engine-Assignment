@@ -4,6 +4,7 @@ extends Area3D
 @export var damage: float = 10.0
 @export var lifetime: float = 5.0
 @export var gravity_affected: bool = false
+@export var projectile_color: Color = Color(0.8, 0.2, 1.0)  # Default purple color
 
 var direction: Vector3 = Vector3.FORWARD
 var shooter = null
@@ -14,9 +15,9 @@ func _ready():
 		# Add emission to make it glow
 		var material = StandardMaterial3D.new()
 		material.emission_enabled = true
-		material.emission = Color(0.8, 0.2, 1.0)  # Purple magic glow
+		material.emission = projectile_color  # Use the projectile color for emission
 		material.emission_energy_multiplier = 1.5
-		material.albedo_color = Color(0.5, 0.1, 0.8, 0.8)  # Semi-transparent purple
+		material.albedo_color = projectile_color.darkened(0.3)  # Slightly darker for the base color
 		$MeshInstance3D.material_override = material
 		
 		# Add a scale animation
@@ -27,6 +28,11 @@ func _ready():
 	# Add trail particle effect if it exists
 	if has_node("GPUParticles3D"):
 		$GPUParticles3D.emitting = true
+		
+		# Try to set particle color if supported by the particle system material
+		if $GPUParticles3D.draw_pass_1 and $GPUParticles3D.process_material:
+			if $GPUParticles3D.process_material.get("color"):
+				$GPUParticles3D.process_material.color = projectile_color
 	
 	# Set lifetime
 	var timer = get_tree().create_timer(lifetime)
@@ -80,7 +86,7 @@ func create_impact_effect():
 	
 	# Add a light
 	var light = OmniLight3D.new()
-	light.light_color = Color(0.8, 0.2, 1.0)  # Purple
+	light.light_color = projectile_color  # Use the projectile's custom color
 	light.light_energy = 2.0
 	light.omni_range = 3.0
 	impact.add_child(light)
@@ -88,4 +94,17 @@ func create_impact_effect():
 	# Make the light fade out
 	var tween = create_tween()
 	tween.tween_property(light, "light_energy", 0.0, 0.3)
-	tween.tween_callback(impact.queue_free) 
+	tween.tween_callback(impact.queue_free)
+
+# Function to set the projectile color
+func set_projectile_color(color: Color):
+	projectile_color = color
+	
+	# Update material if mesh exists
+	if has_node("MeshInstance3D") and $MeshInstance3D.material_override:
+		var material = $MeshInstance3D.material_override
+		if material is StandardMaterial3D:
+			material.emission = color
+			material.albedo_color = color.darkened(0.3)
+	
+	# Update impact effect color (for future impacts) 
