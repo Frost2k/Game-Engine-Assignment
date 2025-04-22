@@ -7,7 +7,7 @@
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_3m0fb"]
 
-[node name="Mage" type="CharacterBody3D" groups=["Enemy"]]
+[node name="SentryMage" type="CharacterBody3D" groups=["Enemy"]]
 collision_layer = 2
 collision_mask = 3
 script = ExtResource("1_iqh72")

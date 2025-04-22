@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends "res://Scripts/enemy3d.gd"
 
 @export var movement_speed: float = 3.0
 @export var jump_impulse = 0.4
@@ -35,6 +35,13 @@ func _ready():
 	print(name, " added to 'Enemy' group")
 	
 	# Force trigger position update
+	# Get the animation player
+	if has_node("skeleton_mage/AnimationPlayer"):
+		animation_player = $skeleton_mage/AnimationPlayer
+	elif has_node("AnimationPlayer"):
+		animation_player = $AnimationPlayer
+	
+	super._ready()
 	
 
 func actor_setup():
@@ -70,7 +77,7 @@ func _physics_process(delta):
 	# real position is -18.8272838592529
 	# offset is 0.406784058
 	#print(next_path_position.y, current_agent_position.y)
-	print(diff.y)
+	#print(diff.y)
 	
 	#var flat_diff = Vector3(diff.x, 0, diff.z)
 	var want_velocity = diff_normal * movement_speed
@@ -85,21 +92,21 @@ func _physics_process(delta):
 		#pass
 		## need to jump
 		#$skeleton_mage2/AnimationPlayer.play("Idle")
-		print("Need to jump")
-		#if not is_on_floor():
+		#print("Need to jump")
+		if not is_on_floor():
 			##print("Is on air?")
 			##velocity.y = 0.0
 		##else:
-		print("Jumping")
-		$skeleton_mage2/AnimationPlayer.play("Jump_Full_Long")
-		velocity.y += jump_impulse
+			print("Jumping")
+			animation_player.play("Jump_Full_Long")
+			velocity.y += jump_impulse
 	#el
 	if not is_on_floor():
-		$skeleton_mage2/AnimationPlayer.play("Jump_Full_Long")
+		animation_player.play("Jump_Full_Long")
 	elif velocity.length_squared() > 1.0:
-		$skeleton_mage2/AnimationPlayer.play("Walking_A")
+		animation_player.play("Walking_A")
 	else:
-		$skeleton_mage2/AnimationPlayer.play("Idle")
+		animation_player.play("Idle")
 	
 	
 	# Gravity
