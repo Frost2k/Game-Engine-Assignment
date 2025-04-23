@@ -243,12 +243,12 @@ func _physics_process(delta):
 				redecide_timer.wait_time = rng.randf_range(2.0, 4.0)
 				redecide_timer.start()
 			if new_state == State.SPELL:
-				print("spell")
+				#print("spell")
 				look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
 				if can_attack:
 					_attack_player()
 			else:
-				print("charging")
+				#print("charging")
 				_process_chase_state(delta)
 	current_state = new_state
 

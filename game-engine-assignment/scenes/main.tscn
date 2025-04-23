@@ -988,7 +988,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.1, 2.6, 1)
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 10.2, 2.6, 13)
 
 [node name="wall_corner" parent="NavigationRegion3D/Building" instance=ExtResource("12_3icda")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6.77946, 2.7, -11)
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6.8, 2.6, -11)
 
 [node name="wall_corner2" parent="NavigationRegion3D/Building" instance=ExtResource("12_3icda")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.2, 2.6, -11)
@@ -2523,6 +2523,11 @@ combat_trait = 1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.880751, -0.999999)
 detection_range = 30.0
 wander_radius = 5.0
+combat_trait = 1
+
+[node name="ChaseMage3" parent="Enemies" instance=ExtResource("39_h3vbj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.4977, 0.729418, -16.8145)
+detection_range = 100.0
 combat_trait = 1
 
 [node name="AIOrchestrator" type="AIOrchestrator" parent="."]

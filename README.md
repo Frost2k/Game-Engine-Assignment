@@ -37,6 +37,13 @@ Necromancer Keep is a first-person adventure/dungeon crawler where players navig
 - Use/consume functionality for gems
 - Drop mechanics for sharing or discarding items
 
+### 2.5 Enemy AI (Godot/GDExtension)
+
+- 6 enemy states: Idle, Wander, Chase, Attack (Spell), Attack (Melee), and Flee
+- 2 enemy traits: Brave and Flees
+- Pathfinding and navigation
+- obstacle avoidance
+
 ## 3. Controls
 
 - **Movement**: WASD keys
@@ -65,6 +72,17 @@ The minimap was built using custom C++ components to ensure optimal performance 
 - **EntityTracker**: Maintains and updates positions of players, enemies, and points of interest.
 - **CustomRenderer**: Provides a high-performance rendering pipeline for the minimap.
 
+### 4.3 AI Subsystem (Godot/GDExtension)
+
+The AI subsystem was built using a combination of Godot and GDExtension. GDExtension handled Finite State Machine logic, while Godot was used for its built-in A* pathfinding and routing.
+
+- Implemented with Finite State Machine.
+- FSM logic is handled in C++ with a GDExtension: `AIOrchestrator`. 
+- Adaptive behavior (C++): repeated ranged attacks makes the AI more likely to charge at the player
+- Navigation and pathfinding using Godot's built-in navigation system (A-star)
+- 6 enemy states: Idle, Wander, Chase, Attack (Spell), Attack (Melee), and Flee
+- 2 enemy traits: Brave and Flees
+
 ## 5. Team Contributions
 
 ### 5.1 UI and Collection Systems (Implemented) Thomas
@@ -73,14 +91,11 @@ The minimap was built using custom C++ components to ensure optimal performance 
 - Start menu and death screen implementation
 - Visual feedback systems for player actions
 
-### 5.2 AI Pathfinding and Enemy Behavior (TBD)
-*[This section will be completed by team member implementing the AI subsystem]*
-
+### 5.2 AI Pathfinding and Enemy Behavior (Implemented) Galen
 Key goals:
 - Custom pathfinding algorithms for dynamic environments
 - Context-aware enemy behavior
-- Dynamic difficulty adjustment based on player performance
-- Formation-based enemy coordination
+- Finite State Machine for enemy AI with multiple states
 
 ### 5.3 Networking and Multiplayer (TBD)
 *[This section will be completed by team member implementing the networking features]*
@@ -99,7 +114,25 @@ Key goals:
 - SCons build system
 
 ### 6.2 Building the GDExtension Modules
-1. Navigate to the `gdextension` directory
+
+#### 6.2.1 Setup
+
+```bash
+# Install scons
+python -m venv game-venv
+game-venv\Scripts\activate.bat
+pip install scons
+
+# Install godot-cpp
+git init
+git submodule add -b 4.x https://github.com/godotengine/godot-cpp
+cd godot-cpp
+git submodule update --init
+```
+
+#### 6.2.2 Build Steps
+
+1. Navigate to the gdextension directory (`src`)
 2. Run `scons platform=<platform>` where `<platform>` is your target platform (windows, linux, macos)
 3. The compiled libraries will be placed in the appropriate location automatically
 
@@ -123,6 +156,6 @@ This project is developed as part of CS-5891 Game Engine course and is intended 
 
 Developed by [Your Team Name]
 - UI and Collection Systems: Thomas Scott
-- AI Pathfinding: [Team Member Name]
+- AI Pathfinding: Galen Wei
 - Networking: [Team Member Name]
 - Additional contributions: [Other Team Members] 
