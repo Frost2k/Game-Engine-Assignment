@@ -82,14 +82,15 @@ Key goals:
 - Dynamic difficulty adjustment based on player performance
 - Formation-based enemy coordination
 
-### 5.3 Networking and Multiplayer (TBD)
-*[This section will be completed by team member implementing the networking features]*
+### 5.3 Networking and Multiplayer Jonas, Kendrick
 
 Key goals:
-- Lobby and matchmaking system
-- State synchronization with prediction algorithms
-- Client-side prediction and server reconciliation
+- Host/Client matchmaking system.
+- State synchronization across models
 - Drop-in/drop-out multiplayer support
+
+Caveats: We were able to get hosting and joining working through godots built in ENetMultiplayer, 
+but were not able to get the syncronization working across all of our added modules. This is in part beacause we finished a lot of the game in the last 2 days, so I was not able to start networking for those features until very recentlty. There was also trouble getting the syncronization to work with our gdextensions modules, and in syncronizing enemy states across both players.   Our partial MP code can be fonud under the networking branch.  
 
 ## 6. Building and Running the Project
 
@@ -124,5 +125,5 @@ This project is developed as part of CS-5891 Game Engine course and is intended 
 Developed by [Your Team Name]
 - UI and Collection Systems: Thomas Scott
 - AI Pathfinding: [Team Member Name]
-- Networking: [Team Member Name]
+- Networking: Jonas, Kendrick
 - Additional contributions: [Other Team Members] 
