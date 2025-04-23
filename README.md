@@ -48,6 +48,12 @@ Youtube Video demo [link](https://youtu.be/lmcNlymCDZ8)
 - Pathfinding and navigation
 - obstacle avoidance
 
+### 2.6 Shader
+
+The modification to a previously subsystem takes the form of 2 shaders:
+1. The water shader in the middle of the level\
+2. The dissolve shader 
+
 ## 3. Controls
 
 - **Movement**: WASD keys
