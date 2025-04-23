@@ -30,6 +30,7 @@ wait_time = 1.5
 one_shot = true
 
 [node name="skeleton_mage" parent="." instance=ExtResource("2_7a4vp")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="HitSound" type="AudioStreamPlayer3D" parent="."]
 volume_db = -10.0

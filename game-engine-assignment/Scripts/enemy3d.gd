@@ -154,7 +154,7 @@ func _physics_process(delta):
 			
 			# Face the player with fixed orientation
 			look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
-			rotate_y(PI)  # Rotate 180 degrees to fix model orientation
+			#rotate_y(PI)  # Rotate 180 degrees to fix model orientation
 			
 			# Stop movement when attacking
 			velocity = Vector3.ZERO
@@ -177,6 +177,10 @@ func _physics_process(delta):
 		
 		_process_wander_state(delta)
 	
+	if not is_on_floor():
+		velocity.y += (get_gravity().y * delta)
+	
+	
 	move_and_slide()
 	
 	# Check for collisions with walls or objects (after move_and_slide)
@@ -190,7 +194,7 @@ func _process_chase_state(delta):
 	
 	# Face the player - add an offset to rotate the model 180 degrees
 	look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
-	rotate_y(PI)  # Rotate 180 degrees to fix model orientation
+	#rotate_y(PI)  # Rotate 180 degrees to fix model orientation
 	
 	# Set velocity to move toward player
 	velocity = direction * speed
@@ -208,7 +212,7 @@ func _process_wander_state(delta):
 		# Face the target direction
 		if direction.length() > 0.1:
 			look_at(Vector3(target_position.x, global_position.y, target_position.z), Vector3.UP)
-			rotate_y(PI)  # Rotate 180 degrees to fix model orientation
+			#rotate_y(PI)  # Rotate 180 degrees to fix model orientation
 		
 		# Check if we've reached the target position (with some tolerance)
 		var distance_to_target = global_position.distance_to(target_position)
@@ -583,7 +587,7 @@ func die():
 	current_state = State.IDLE
 	
 	# Debug message
-	print(name + " has been defeated!")
+	#print(name + " has been defeated!")
 	
 	# Track enemy defeat in global stats
 	if "Global" in get_node("/root"):
