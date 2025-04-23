@@ -698,8 +698,20 @@ func melee_attack():
 	# Perform the raycast
 	var result = space_state.intersect_ray(query)
 	
+
+	
+	# play a sound
+	var sound_rng = ceil(randf() * 3);
+	var sfx = get_node("SFX/AudioSword" + str(sound_rng))
+	if !sfx.is_playing():
+		#$AudioStreamPlayer2D.stream = CorrectSound
+		sfx.play()
+
 	# If we hit something, apply damage
 	if not result.is_empty():
+		#return
+	
+	
 		var target = result["collider"]
 		if target.has_method("take_damage"):
 			target.take_damage(melee_damage)
@@ -713,9 +725,6 @@ func melee_attack():
 		elif target.has_method("apply_knockback"):
 			# For custom implementation
 			target.apply_knockback(knockback_direction * melee_knockback)
-		#elif "velocity" in target:
-			# For characters with velocity property
-			#target.velocity += knockback_direction * melee_knockback
 	
 	# Start cooldown timer
 	can_melee = false
