@@ -81,5 +81,15 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Quit"
 
+[node name="Host" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Host Game"
+
+[node name="Join" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Join Game"
+
 [connection signal="pressed" from="ButtonContainer/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="ButtonContainer/QuitButton" to="." method="_on_quit_button_pressed"]
+[connection signal="pressed" from="ButtonContainer/Host" to="." method="_on_host_pressed"]
+[connection signal="pressed" from="ButtonContainer/Join" to="." method="_on_join_pressed"]

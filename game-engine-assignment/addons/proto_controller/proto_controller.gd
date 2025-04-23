@@ -124,6 +124,9 @@ var can_shoot : bool = true
 
 func _ready() -> void:
 	# Check if Head exists, create if needed
+	if not is_multiplayer_authority():
+		set_process_input(false)
+		set_physics_process(false)
 	if not head:
 		head = Node3D.new()
 		head.name = "Head"
@@ -209,6 +212,8 @@ func _ready() -> void:
 	if head:
 		look_rotation.y = rotation.y
 		look_rotation.x = head.rotation.x
+		
+	
 		
 func extract_item_data(item: Node) -> Variant:
 	# Assuming the item has these exported fields or properties
