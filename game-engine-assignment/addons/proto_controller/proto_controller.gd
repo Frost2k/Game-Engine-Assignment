@@ -120,6 +120,7 @@ var pickedObject
 var health : float = 100.0
 var is_dead : bool = false
 var can_shoot : bool = true
+var knockback_impulse = Vector3.ZERO
 
 ## IMPORTANT REFERENCES
 @onready var head: Node3D = $Head if has_node("Head") else null
@@ -340,6 +341,8 @@ func _physics_process(delta: float) -> void:
 			move_speed = sprint_speed
 	else:
 		move_speed = base_speed
+	
+
 
 	# Apply desired movement to velocity
 	if can_move:
@@ -354,6 +357,10 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = 0
 		velocity.y = 0
+
+	# apply knockback
+	velocity += knockback_impulse
+	knockback_impulse = Vector3.ZERO
 	
 	# Use velocity to actually move
 	move_and_slide()
@@ -737,3 +744,7 @@ func melee_attack():
 	
 	#print("Player performed melee attack!")
 	
+func apply_knockback(vec):
+	print("player getting knocked back!")
+	print(vec)
+	knockback_impulse += vec

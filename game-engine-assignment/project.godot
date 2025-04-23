@@ -26,6 +26,7 @@ project/assembly_name="Game Engine Assignment 1"
 [global_group]
 
 pickup_items=""
+Player=""
 
 [input]
 

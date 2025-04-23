@@ -21,9 +21,13 @@ extends CharacterBody3D
 @export var projectile_scene: PackedScene = preload("res://scenes/mage_projectile.tscn")
 @export var projectile_speed: float = 8.0
 @export var projectile_damage: float = 15.0
-@export var charge_cooldown: float = 0.5
-@export var attack_cooldown: float = 1.5  # Time between attacks
+@export var spell_charge_delay: float = 0.5
+@export var spell_cooldown_delay: float = 1.5  # Time between attacks
+#@export var melee_charge_delay: float = 0.5
+@export var melee_cooldown_delay: float = 1.0
+@export var melee_knockback: float = 15.0
 @export var projectile_color: Color = Color(0.5, 0.2, 0.8, 0.8)  # Default purple color
+
 
 # Drop variables
 @export_group("Drops")
@@ -38,12 +42,15 @@ var current_state = State.IDLE
 var player = null
 var can_take_damage = true
 var can_attack = true
+var can_melee = true
 var target_position = Vector3.ZERO
 var spawn_position = Vector3.ZERO
 var health_bar
 var wander_timer: Timer
-var attack_reset_timer: Timer
-var attack_charge_timer: Timer
+var spell_attack_reset_timer: Timer
+var spell_attack_charge_timer: Timer
+var melee_attack_reset_timer: Timer
+var melee_attack_charge_timer: Timer
 var rng = RandomNumberGenerator.new()
 var animation_player: AnimationPlayer
 var damaged_timer: float = 0.0
@@ -94,14 +101,22 @@ func _ready():
 	_start_wandering()
 	
 	# Create attack timer
-	attack_charge_timer = Timer.new()
-	attack_charge_timer.one_shot = true
-	add_child(attack_charge_timer)
-	attack_charge_timer.timeout.connect(_on_attack_charge_timer_timeout)
-	attack_reset_timer = Timer.new()
-	attack_reset_timer.one_shot = true
-	add_child(attack_reset_timer)
-	attack_reset_timer.timeout.connect(_on_attack_reset_timer_timeout)
+	spell_attack_charge_timer = Timer.new()
+	spell_attack_charge_timer.one_shot = true
+	add_child(spell_attack_charge_timer)
+	spell_attack_charge_timer.timeout.connect(_on_spell_attack_charge_timer_timeout)
+	spell_attack_reset_timer = Timer.new()
+	spell_attack_reset_timer.one_shot = true
+	add_child(spell_attack_reset_timer)
+	spell_attack_reset_timer.timeout.connect(_on_spell_attack_reset_timer_timeout)
+	#melee_attack_charge_timer = Timer.new()
+	#melee_attack_charge_timer.one_shot = true
+	#add_child(melee_attack_charge_timer)
+	#melee_attack_charge_timer.timeout.connect(_on_melee_attack_charge_timer_timeout)
+	melee_attack_reset_timer = Timer.new()
+	melee_attack_reset_timer.one_shot = true
+	add_child(melee_attack_reset_timer)
+	melee_attack_reset_timer.timeout.connect(_on_melee_attack_reset_timer_timeout)
 		
 	# Print debug message to confirm the enemy is loaded
 	print("Enemy initialized: " + name + " at position " + str(global_position))
@@ -153,6 +168,7 @@ func _physics_process(delta):
 	# Check if player is within detection range
 	if distance_to_player <= detection_range:
 		# If player is within attack range
+		# new_state = $Orchestrator.next_state(current_state, distance_to_player, hp, id, trait)
 		if distance_to_player <= attack_range:
 			if current_state != State.ATTACK:
 				current_state = State.ATTACK
@@ -169,6 +185,8 @@ func _physics_process(delta):
 			
 			
 			# Attack if possible
+			if can_melee:
+				_melee_player()
 			if can_attack:
 				_attack_player()
 		else:
@@ -292,28 +310,64 @@ func _shoot_player():
 	
 	print(name + " shoots magic ball at player")
 
+func _melee_player():
+	# get all players in $MeleeDamageBBox
+	var players_in_bbox = $MeleeDamageBBox.get_overlapping_bodies()
+	var did_melee = false
+	for player in players_in_bbox:
+		if player.is_in_group("Player") and player.has_method("take_damage"):
+			player.take_damage(damage)
+			var knockback_direction = player.global_position - global_position
+			knockback_direction = Vector3(knockback_direction.x, 0.5, knockback_direction.z)
+			knockback_direction = knockback_direction.normalized()
+			player.apply_knockback(knockback_direction * melee_knockback)
+			did_melee = true
+
+	if did_melee:
+		print("MELEE")
+		can_melee = false # go to cooldown
+		melee_attack_reset_timer.wait_time = melee_cooldown_delay
+		melee_attack_reset_timer.start()
+	pass
+
 func _attack_player():
+
+	
 	if not can_attack or not player:
 		return
 	
-	# Start attack cooldown
-	can_attack = false
-	attack_charge_timer.wait_time = charge_cooldown
-	attack_charge_timer.start()
+	var dist_to_player = (global_position - player.global_position).length()
 	
-	# Play attack animation
+
+	# Start attack cooldown
 	play_animation("attack")
+	can_attack = false
+	spell_attack_charge_timer.wait_time = spell_charge_delay
+	spell_attack_charge_timer.start()
+		
+		# Play attack animation
 	
 	#_shoot_player()
 
-func _on_attack_charge_timer_timeout():
+func _on_spell_attack_charge_timer_timeout():
 	_shoot_player()
-	attack_reset_timer.wait_time = attack_cooldown
-	attack_reset_timer.start()
+	spell_attack_reset_timer.wait_time = spell_cooldown_delay
+	spell_attack_reset_timer.start()
 
-func _on_attack_reset_timer_timeout():
+func _on_spell_attack_reset_timer_timeout():
 	#_shoot_player()
 	can_attack = true
+
+
+#func _on_melee_attack_charge_timer_timeout():
+	#_melee_player()
+	#melee_attack_reset_timer.wait_time = melee_cooldown_delay
+	#melee_attack_reset_timer.start()
+
+func _on_melee_attack_reset_timer_timeout():
+	#_shoot_player()
+	can_melee = true
+
 
 # Get current health for damage calculation
 func get_current_health() -> float:
@@ -577,7 +631,8 @@ func play_animation(anim_name: String):
 		"attack": "attack",
 		"attack_charge": "attack_anticipation",
 		"hit": "hit",
-		"death": "death"
+		"death": "death",
+		"melee": "1H_Melee_Attack_Chop"
 	}
 	
 	# Check for animations in the map or use the name directly

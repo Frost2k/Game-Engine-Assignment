@@ -105,18 +105,18 @@ func _navigate_to(delta, next_path_position):
 		velocity.y += (get_gravity().y * delta)
 	
 	#print(diff.y)
-	if diff.y >= 0.1 and is_on_wall():
-		#pass
-		## need to jump
-		#$skeleton_mage2/AnimationPlayer.play("Idle")
-		#print("Need to jump")
-		if not is_on_floor():
-			##print("Is on air?")
-			##velocity.y = 0.0
-		##else:
-			print("Jumping")
-			#animation_player.play("Jump_Full_Long")
-			velocity.y += jump_impulse
+	#if diff.y >= 0.1 and is_on_wall():
+		##pass
+		### need to jump
+		##$skeleton_mage2/AnimationPlayer.play("Idle")
+		##print("Need to jump")
+		#if not is_on_floor():
+			###print("Is on air?")
+			###velocity.y = 0.0
+		###else:
+			#print("Jumping")
+			##animation_player.play("Jump_Full_Long")
+			#velocity.y += jump_impulse
 	#el
 
 	

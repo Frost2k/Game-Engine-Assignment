@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://ko1vos4th1wq"]
+[gd_scene load_steps=6 format=3 uid="uid://ko1vos4th1wq"]
 
 [ext_resource type="Script" path="res://Scripts/enemy3d.gd" id="1_iqh72"]
 [ext_resource type="PackedScene" uid="uid://c8prxxp3v2t4y" path="res://assets/3d_game/skeleton/skeleton_mage.glb" id="2_7a4vp"]
@@ -6,6 +6,9 @@
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_lc5bp"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_3m0fb"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_lo1rf"]
+radius = 1.5
 
 [node name="SentryMage" type="CharacterBody3D" groups=["Enemy"]]
 collision_layer = 2
@@ -42,3 +45,9 @@ volume_db = -5.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 billboard = 1
 text = "Enemy"
+
+[node name="MeleeDamageBBox" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeDamageBBox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_lo1rf")
