@@ -771,6 +771,14 @@ func die():
 					var material = mesh.get_surface_override_material(i)
 					if material is StandardMaterial3D:
 						material.albedo_color.a = alpha
+				var material = mesh.get_active_material(0)
+				if material:
+					if material is StandardMaterial3D:
+						material.albedo_color.a = alpha
+						print(alpha)
+					elif material is ShaderMaterial:
+						print(elapsed)
+						material.set_shader_parameter("explosion_time", elapsed)
 			
 			# Move down slightly
 			position.y -= 0.01

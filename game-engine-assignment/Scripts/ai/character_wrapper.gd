@@ -186,5 +186,8 @@ func _process_wander_state(delta):
 func _handle_obstacle_collision():
 	# try to jump
 	pass
+	
+func die():
+	super.die()
 
 	
