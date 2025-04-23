@@ -75,6 +75,12 @@ var item_database = {
 @export var fire_cooldown : float = 0.5
 ## Projectile scene to instance
 @export var projectile_scene : PackedScene = preload("res://scenes/projectile.tscn")
+@export var melee_range = 8.0
+@export var melee_cooldown = 3.0
+@export var melee_damage = 30.0
+@export var melee_knockback = 20.0
+var can_melee = true
+
 
 @export_group("Inventory")
 ## Enable inventory system
@@ -101,6 +107,7 @@ var item_database = {
 @export var input_freefly : String = "freefly"
 ## Name of Input Action to shoot.
 @export var input_shoot : String = "shoot"
+@export var input_melee : String = "melee"
 
 # Runtime variables
 var mouse_captured : bool = false
@@ -113,12 +120,14 @@ var pickedObject
 var health : float = 100.0
 var is_dead : bool = false
 var can_shoot : bool = true
+var knockback_impulse = Vector3.ZERO
 
 ## IMPORTANT REFERENCES
 @onready var head: Node3D = $Head if has_node("Head") else null
 @onready var collider: CollisionShape3D = $Collider if has_node("Collider") else null
 @onready var projectile_launcher = null
-@onready var fire_timer = null 
+@onready var fire_timer = null
+@onready var melee_timer = null 
 @onready var health_bar = null
 @onready var inventory_system = null
 
@@ -167,6 +176,18 @@ func _ready() -> void:
 		print("Created FireTimer node")
 	else:
 		fire_timer = get_node("FireTimer")
+	
+	# Create MeleeTimer if it doesn't exist
+	if not has_node("MeleeTimer"):
+		melee_timer = Timer.new()
+		melee_timer.name = "MeleeTimer"
+		melee_timer.wait_time = fire_cooldown
+		melee_timer.one_shot = true
+		add_child(melee_timer)
+		melee_timer.timeout.connect(_on_melee_timer_timeout)
+		print("Created FireTimer node")
+	else:
+		melee_timer = get_node("FireTimer")
 	
 	# Create HealthBar if it doesn't exist
 	if not has_node("HealthBar"):
@@ -230,7 +251,7 @@ func pick_up_item(item: Node):
 	else:
 		file_name = item.name.to_lower().strip_edges()
 
-	print("Trying to pick up: '" + file_name + "'")
+	#print("Trying to pick up: '" + file_name + "'")
 
 	if item_database.has(file_name):
 		var item_data = item_database[file_name]
@@ -274,7 +295,10 @@ func _unhandled_input(event):
 	# Handle shooting
 	if Input.is_action_pressed(input_shoot) and can_shoot:
 		shoot()
-		
+	
+	if Input.is_action_pressed(input_melee) and can_melee:
+		melee_attack()
+	
 	# Toggle inventory
 	if has_inventory and Input.is_action_just_pressed(input_inventory):
 		toggle_inventory()
@@ -317,6 +341,8 @@ func _physics_process(delta: float) -> void:
 			move_speed = sprint_speed
 	else:
 		move_speed = base_speed
+	
+
 
 	# Apply desired movement to velocity
 	if can_move:
@@ -331,6 +357,10 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = 0
 		velocity.y = 0
+
+	# apply knockback
+	velocity += knockback_impulse
+	knockback_impulse = Vector3.ZERO
 	
 	# Use velocity to actually move
 	move_and_slide()
@@ -525,6 +555,9 @@ func shoot():
 func _on_fire_timer_timeout():
 	can_shoot = true
 
+func _on_melee_timer_timeout():
+	can_melee = true
+
 ## Checks if some Input Actions haven't been created.
 ## Disables functionality accordingly.
 func check_input_mappings():
@@ -551,6 +584,8 @@ func check_input_mappings():
 		can_freefly = false
 	if not InputMap.has_action(input_shoot):
 		push_error("Shooting disabled. No InputAction found for input_shoot: " + input_shoot)
+	if not InputMap.has_action(input_melee):
+		push_error("Melee disabled. No InputAction found for input_melee: " + input_shoot)
 	
 	# Check inventory input
 	if has_inventory and not InputMap.has_action(input_inventory):
@@ -645,4 +680,71 @@ func _process(delta):
 		if pickup_message_timer <= 0:
 			pickup_message.visible = false
 
+func melee_attack():
+	print("melee")
+	if is_dead:
+		return
+	if not can_melee:
+		return
 	
+	# Get the mouse position in the world
+	var camera = get_viewport().get_camera_3d()  # For 3D
+	# var camera = get_viewport().get_camera_2d()  # For 2D
+	
+	# For 3D games
+	var mouse_pos = get_viewport().get_mouse_position()
+	var ray_origin = camera.project_ray_origin(mouse_pos)
+	var ray_end = ray_origin + camera.project_ray_normal(mouse_pos) * melee_range
+	
+	# Create physics raycast query
+	var space_state = get_world_3d().direct_space_state
+	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_end)
+	#query.collision_mask = enemy_collision_layer  # Set to match your enemy's collision layer
+	query.exclude = [self]  # Don't hit yourself
+	
+	# Perform the raycast
+	var result = space_state.intersect_ray(query)
+	
+
+	
+	# play a sound
+	var sound_rng = ceil(randf() * 3);
+	var sfx = get_node("SFX/AudioSword" + str(sound_rng))
+	if !sfx.is_playing():
+		#$AudioStreamPlayer2D.stream = CorrectSound
+		sfx.play()
+
+	# If we hit something, apply damage
+	if not result.is_empty():
+		#return
+	
+	
+		var target = result["collider"]
+		if target.has_method("take_damage"):
+			target.take_damage(melee_damage)
+			print("Hit enemy with melee attack: ", target.name)
+		
+		# Apply knockback
+		var knockback_direction = (result["position"] - global_position).normalized()
+		if target is RigidBody3D:
+			# For physics bodies, apply impulse
+			target.apply_impulse(knockback_direction * melee_knockback, result["position"])
+		elif target.has_method("apply_knockback"):
+			# For custom implementation
+			target.apply_knockback(knockback_direction * melee_knockback)
+	
+	# Start cooldown timer
+	can_melee = false
+	if melee_timer:
+		melee_timer.start()
+	else:
+		# If timer doesn't exist, create a temporary cooldown
+		await get_tree().create_timer(melee_cooldown).timeout
+		can_melee = true
+	
+	#print("Player performed melee attack!")
+	
+func apply_knockback(vec):
+	print("player getting knocked back!")
+	print(vec)
+	knockback_impulse += vec

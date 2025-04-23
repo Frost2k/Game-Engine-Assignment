@@ -1,7 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://bs72ogkvdd7d6"]
+[gd_scene load_steps=9 format=3 uid="uid://bs72ogkvdd7d6"]
 
 [ext_resource type="Script" path="res://addons/proto_controller/proto_controller.gd" id="1_ucva2"]
 [ext_resource type="PackedScene" uid="uid://bv4to8yd2momy" path="res://scenes/projectile_launcher.tscn" id="2_2d5hu"]
+[ext_resource type="AudioStream" uid="uid://dcr7kxq6r7ade" path="res://audio/Minifantasy_Dungeon_SFX/07_human_atk_sword_1.wav" id="3_6fi8a"]
+[ext_resource type="AudioStream" uid="uid://c1qfctjjir8br" path="res://audio/Minifantasy_Dungeon_SFX/07_human_atk_sword_2.wav" id="4_25fnh"]
+[ext_resource type="AudioStream" uid="uid://di1vyqxwdey77" path="res://audio/Minifantasy_Dungeon_SFX/07_human_atk_sword_3.wav" id="5_lkxh5"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iof21"]
 albedo_color = Color(0.91806, 0.575202, 0.222449, 1)
@@ -43,3 +46,16 @@ anchor_left = 0.25
 anchor_right = 0.75
 offset_top = 50.0
 theme_override_font_sizes/font_size = 32
+
+[node name="SFX" type="Node3D" parent="."]
+
+[node name="GenericPlayer" type="AudioStreamPlayer3D" parent="SFX"]
+
+[node name="AudioSword1" type="AudioStreamPlayer3D" parent="SFX"]
+stream = ExtResource("3_6fi8a")
+
+[node name="AudioSword2" type="AudioStreamPlayer3D" parent="SFX"]
+stream = ExtResource("4_25fnh")
+
+[node name="AudioSword3" type="AudioStreamPlayer3D" parent="SFX"]
+stream = ExtResource("5_lkxh5")

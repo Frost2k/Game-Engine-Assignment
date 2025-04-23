@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://i2uv3nn8x5ad"]
+
+[ext_resource type="Texture2D" uid="uid://c33lt80nef1eu" path="res://assets/3d_game/skeleton/skeleton_mage_skeleton_texture.png" id="1_dnugy"]
+
+[resource]
+resource_name = "skeleton"
+albedo_texture = ExtResource("1_dnugy")
+roughness = 0.5
