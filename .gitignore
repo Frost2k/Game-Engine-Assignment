@@ -29,6 +29,7 @@ cache/
 *.pdb
 *.lib
 bin
+!gdexample.gdextension
 *.config
 *.creator
 *.creator.user
@@ -202,3 +203,5 @@ cmake-build-*
 
 # Remove the build file also because it is local computer dependent
 build/
+
+godot-cpp
