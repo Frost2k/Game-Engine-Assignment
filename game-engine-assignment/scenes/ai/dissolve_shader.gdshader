@@ -24,8 +24,8 @@ uniform vec3 uv2_offset;
 //uniform bool explosion_on = false;
 uniform float explosion_time = 0.0; // <-- Controlled by script (reset to 0 each time)
 uniform float explosion_speed : hint_range(0.0,10.0) = 0.5;
-uniform float dissolve_delay   : hint_range(0.0,10.0) = 1.0;
-uniform float dissolve_speed   : hint_range(0.0,10.0) = 0.5;
+uniform float dissolve_delay   : hint_range(0.0,10.0) = 0.1;
+uniform float dissolve_speed   : hint_range(0.0,10.0) = 10.0;
 
 uniform float noise_scale : hint_range(0.1,10.0) = 3.0;
 uniform sampler2D noise_texture;

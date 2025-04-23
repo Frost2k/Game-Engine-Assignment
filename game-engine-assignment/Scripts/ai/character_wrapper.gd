@@ -21,6 +21,7 @@ var real_velocity
 
 func _ready():
 	
+	
 	# These values need to be adjusted for the actor's speed
 	# and the navigation layout.
 	navigation_agent.path_desired_distance = 0.5

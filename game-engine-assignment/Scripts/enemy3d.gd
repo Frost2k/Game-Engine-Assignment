@@ -61,6 +61,13 @@ var knockback_impulse = Vector3.ZERO
 
 # Called when the node enters the scene tree for the first time
 func _ready():
+	
+	# duplicate the shader
+	$skeleton_mage/Rig/Skeleton3D/Skeleton_Mage_Body.mesh.surface_set_material(
+		0, 
+		$skeleton_mage/Rig/Skeleton3D/Skeleton_Mage_Body.mesh.surface_get_material(0).duplicate()
+	)
+	
 	# Remember spawn position as wander center
 	spawn_position = global_position
 	
@@ -775,9 +782,9 @@ func die():
 				if material:
 					if material is StandardMaterial3D:
 						material.albedo_color.a = alpha
-						print(alpha)
+						#print(alpha)
 					elif material is ShaderMaterial:
-						print(elapsed)
+						#print(elapsed)
 						material.set_shader_parameter("explosion_time", elapsed)
 			
 			# Move down slightly
