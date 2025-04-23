@@ -30,7 +30,7 @@ Youtube Video demo [link](https://youtu.be/lmcNlymCDZ8)
 - Health and damage system with visual feedback
 - Projectile combat with visual effects
 
-### 2.4 Collection/Inventory System
+### 2.4 Collection/Inventory System (Most not fully implemented)
 - Five distinct gem types with unique effects
   - Purple (Magic): Energy restoration
   - Red (Health): Health restoration
@@ -107,14 +107,15 @@ Key goals:
 - Context-aware enemy behavior
 - Finite State Machine for enemy AI with multiple states
 
-### 5.3 Networking and Multiplayer (TBD)
-*[This section will be completed by team member implementing the networking features]*
+5.3 Networking and Multiplayer Jonas, Kendrick
 
 Key goals:
-- Lobby and matchmaking system
-- State synchronization with prediction algorithms
-- Client-side prediction and server reconciliation
+
+- Host/Client matchmaking system.
+- State synchronization across models
 - Drop-in/drop-out multiplayer support
+
+Caveats: We were able to get hosting and joining working through godots built in ENetMultiplayer, but were not able to get the syncronization working across all of our added modules. This is in part beacause we finished a lot of the game in the last 2 days, so I was not able to start networking for those features until very recentlty. There was also trouble getting the syncronization to work with our gdextensions modules, and in syncronizing enemy states across both players. Our partial MP code can be fonud under the networking branch.
 
 ## 6. Building and Running the Project
 
@@ -167,5 +168,5 @@ This project is developed as part of CS-5891 Game Engine course and is intended 
 Developed by [Your Team Name]
 - UI and Collection Systems: Thomas Scott
 - AI Pathfinding: Galen Wei
-- Networking: [Team Member Name]
-- Additional contributions: [Other Team Members] 
+- Networking: Jonas Kobza
+- Additional contributions: Kendrick Dow, Xueqi Chen
