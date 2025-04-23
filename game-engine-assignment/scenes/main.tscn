@@ -2512,8 +2512,12 @@ projectile_color = Color(0.163697, 0.354589, 0.823972, 0.8)
 [node name="ChaseMage" parent="Enemies" instance=ExtResource("39_h3vbj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 2.88075, 8)
 detection_range = 30.0
+combat_trait = 1
 
 [node name="ChaseMage2" parent="Enemies" instance=ExtResource("39_h3vbj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.880751, -0.999999)
 detection_range = 30.0
 wander_radius = 5.0
+combat_trait = 1
+
+[node name="AIOrchestrator" type="AIOrchestrator" parent="."]

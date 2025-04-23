@@ -75,10 +75,10 @@ var item_database = {
 @export var fire_cooldown : float = 0.5
 ## Projectile scene to instance
 @export var projectile_scene : PackedScene = preload("res://scenes/projectile.tscn")
-@export var melee_range = 3.0
+@export var melee_range = 8.0
 @export var melee_cooldown = 3.0
 @export var melee_damage = 30.0
-@export var melee_knockback = 5.0
+@export var melee_knockback = 15.0
 var can_melee = true
 
 

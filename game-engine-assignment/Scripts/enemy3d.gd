@@ -27,7 +27,7 @@ extends CharacterBody3D
 @export var melee_cooldown_delay: float = 1.0
 @export var melee_knockback: float = 15.0
 @export var projectile_color: Color = Color(0.5, 0.2, 0.8, 0.8)  # Default purple color
-
+@export_enum("Brave:0", "Flees:1") var combat_trait: int = 0
 
 # Drop variables
 @export_group("Drops")
@@ -37,7 +37,15 @@ extends CharacterBody3D
 @export var force_gem_drop: bool = false  # If true, always drops a gem
 
 # State variables
-enum State {IDLE, WANDER, CHASE, ATTACK}
+enum State {
+	IDLE=0, 
+	WANDER=1, 
+	CHASE=2, 
+	#ATTACK
+	CHARGE=4,
+	SPELL=8,
+	FLEE=16,
+}
 var current_state = State.IDLE
 var player = null
 var can_take_damage = true
@@ -51,6 +59,7 @@ var spell_attack_reset_timer: Timer
 var spell_attack_charge_timer: Timer
 var melee_attack_reset_timer: Timer
 var melee_attack_charge_timer: Timer
+var redecide_timer: Timer
 var rng = RandomNumberGenerator.new()
 var animation_player: AnimationPlayer
 var damaged_timer: float = 0.0
@@ -58,6 +67,8 @@ var hit_effect_scene: PackedScene
 var hit_sounds: Array = []
 var is_dead: bool = false
 var knockback_impulse = Vector3.ZERO
+var orchestrator: AIOrchestrator
+var decided_already = false
 
 # Called when the node enters the scene tree for the first time
 func _ready():
@@ -67,6 +78,12 @@ func _ready():
 		0, 
 		$skeleton_mage/Rig/Skeleton3D/Skeleton_Mage_Body.mesh.surface_get_material(0).duplicate()
 	)
+	
+	orchestrator = get_node("../../AIOrchestrator")
+	if orchestrator == null:
+		push_error("orchestrator is null")
+	#else:
+		#print("found orchestrator")
 	
 	# Remember spawn position as wander center
 	spawn_position = global_position
@@ -124,10 +141,18 @@ func _ready():
 	melee_attack_reset_timer.one_shot = true
 	add_child(melee_attack_reset_timer)
 	melee_attack_reset_timer.timeout.connect(_on_melee_attack_reset_timer_timeout)
+	redecide_timer = Timer.new()
+	redecide_timer.one_shot = true
+	add_child(redecide_timer)
+	redecide_timer.timeout.connect(_on_redecide_timer)
 		
 	# Print debug message to confirm the enemy is loaded
 	print("Enemy initialized: " + name + " at position " + str(global_position))
 	play_animation("idle")
+	
+	set_physics_process(false)
+	await get_tree().physics_frame
+	set_physics_process(true)
 
 func _process(delta):
 	# Update damaged timer for flashing effect
@@ -173,43 +198,101 @@ func _physics_process(delta):
 	var distance_to_player = global_position.distance_to(player.global_position)
 	
 	# Check if player is within detection range
-	if distance_to_player <= detection_range:
-		# If player is within attack range
-		# new_state = $Orchestrator.next_state(current_state, distance_to_player, hp, id, trait)
-		if distance_to_player <= attack_range:
-			if current_state != State.ATTACK:
-				current_state = State.ATTACK
-				print(name + " is now attacking player")
-				play_animation("attack_charge")
-				
-				# Stop movement when attacking
-				velocity = Vector3.ZERO
-			
-			# Face the player with fixed orientation
-			look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
-			#rotate_y(PI)  # Rotate 180 degrees to fix model orientation
-			
-			
-			
-			# Attack if possible
-			if can_melee:
-				_melee_player()
-			if can_attack:
-				_attack_player()
-		else:
-			# Chase player if too far to attack but within detection range
-			if current_state != State.CHASE:
-				current_state = State.CHASE
-				print(name + " is now chasing player")
-				play_animation("walk")
-			
-			_process_chase_state(delta)
-	else:
-		# If player is out of detection range, go back to wandering
+	var new_state
+	#if not decided_already:
+	new_state = orchestrator.next_enemy_state(current_state, distance_to_player, current_health, combat_trait, detection_range, attack_range)
+		#decided_already = true
+		#redecide_timer.wait_time = rng.randf_range(2.0, 4.0)
+		#redecide_timer.start()
+	#elif current_health < 20.0:
+		#new_state = orchestrator.next_enemy_state(current_state, distance_to_player, current_health, 0, detection_range, attack_range)
+	#else:
+		#new_state = current_state
+	
+	if new_state == State.WANDER:
 		if current_state != State.WANDER and current_state != State.IDLE:
 			_start_wandering()
 		
 		_process_wander_state(delta)
+	elif new_state == State.CHASE:
+		if current_state != State.CHASE:
+			current_state = State.CHASE
+			print(name + " is now chasing player")
+			play_animation("walk")
+		_process_chase_state(delta)
+	elif new_state == State.FLEE:
+		if current_state != State.FLEE:
+			print(name + " is now fleeing player")
+			_start_fleeing(delta)
+		_process_flee_state(delta)
+	elif new_state == State.SPELL || new_state == State.CHARGE:
+		if current_state != State.SPELL && current_state != State.CHARGE:
+			print(name + " is now attacking player")
+			play_animation("attack_charge")
+			
+			if new_state != State.CHARGE:
+				# Stop movement when attacking
+				velocity = Vector3.ZERO
+		else:
+			# previous state is also an attack
+			# prevent rapidly cycling between 2
+			if decided_already:
+				new_state = current_state
+			else:
+				decided_already = true
+				redecide_timer.wait_time = rng.randf_range(2.0, 4.0)
+				redecide_timer.start()
+			if new_state == State.SPELL:
+				print("spell")
+				look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
+				if can_attack:
+					_attack_player()
+			else:
+				print("charging")
+				_process_chase_state(delta)
+	current_state = new_state
+
+
+	# Attack if possible
+	if can_melee:
+		_melee_player()
+	#if distance_to_player <= detection_range:
+		## If player is within attack range
+		## new_state = $Orchestrator.next_state(current_state, distance_to_player, hp, trait)
+		#if distance_to_player <= attack_range:
+			#if current_state != State.ATTACK:
+				#current_state = State.ATTACK
+				#print(name + " is now attacking player")
+				#play_animation("attack_charge")
+				#
+				## Stop movement when attacking
+				#velocity = Vector3.ZERO
+			#
+			## Face the player with fixed orientation
+			#look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
+			##rotate_y(PI)  # Rotate 180 degrees to fix model orientation
+			#
+			#
+			#
+			## Attack if possible
+			#if can_melee:
+				#_melee_player()
+			#if can_attack:
+				#_attack_player()
+		#else:
+			## Chase player if too far to attack but within detection range
+			#if current_state != State.CHASE:
+				#current_state = State.CHASE
+				#print(name + " is now chasing player")
+				#play_animation("walk")
+			#
+			#_process_chase_state(delta)
+	#else:
+		## If player is out of detection range, go back to wandering
+		#if current_state != State.WANDER and current_state != State.IDLE:
+			#_start_wandering()
+		#
+		#_process_wander_state(delta)
 	
 	# gravity
 	if not is_on_floor():
@@ -374,6 +457,9 @@ func _on_spell_attack_reset_timer_timeout():
 func _on_melee_attack_reset_timer_timeout():
 	#_shoot_player()
 	can_melee = true
+	
+func _on_redecide_timer():
+	decided_already = false
 
 
 # Get current health for damage calculation
@@ -760,7 +846,7 @@ func die():
 						transparent_material.albedo_color.a = 1.0
 						mesh.set_surface_override_material(i, transparent_material)
 		
-		# Create a timer to handle the fade animation
+		# Create a timerp to handle the fade animation
 		var fade_timer = Timer.new()
 		fade_timer.name = "FadeTimer"
 		fade_timer.wait_time = 0.05  # Update several times per second
@@ -1013,4 +1099,8 @@ func apply_knockback(vec):
 	print("getting knocked back!")
 	knockback_impulse += vec
 	#move_and_slide()
-	
+
+func _start_fleeing(delta):
+	pass	
+func _process_flee_state(delta):
+	pass

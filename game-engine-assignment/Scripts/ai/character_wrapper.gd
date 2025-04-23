@@ -14,6 +14,7 @@ var movement_speed: float = 3.0
 @export var jump_impulse = 0.4
 @export var chase_movement_speed: float = 3.0
 @export var wander_movement_speed: float = 1.0
+@export var flee_movement_speed: float = 5.0
 
 # detect the mage getting "stuck"
 var last_position
@@ -85,6 +86,7 @@ func _navigate_to(delta, next_path_position):
 
 	#var diff = current_agent_position.direction_to(next_path_position) 
 	var diff = (next_path_position - current_agent_position)
+
 	
 	# correct the height offset
 	diff = Vector3(diff.x, diff.y - height_offset_fix, diff.z)
@@ -132,9 +134,10 @@ func _navigate_to(delta, next_path_position):
 	# Make it look at the target
 	var flat_path_position: Vector3 = Vector3(next_path_position)
 	flat_path_position.y = current_agent_position.y
-	temp_transform = temp_transform.looking_at(flat_path_position, Vector3.UP)
+	if current_agent_position != flat_path_position:
+		temp_transform = temp_transform.looking_at(flat_path_position, Vector3.UP)
 
-	global_transform.basis = global_transform.basis.slerp(temp_transform.basis, 0.1)
+		global_transform.basis = global_transform.basis.slerp(temp_transform.basis, 0.1)
 
 	move_and_slide()
 
@@ -151,6 +154,14 @@ func _start_wandering():
 	# Set the navigation agent's target position
 	navigation_agent.target_position = target_position
 
+func _start_fleeing(delta):
+	# always flee to 53, -29
+	var random_angle = randf() * 2 * PI
+	
+	# Calculate target position using trigonometry
+	var target_offset = Vector3(cos(random_angle), 0, sin(random_angle)) * wander_radius
+	var target_position = Vector3(53, 0, -29) + target_offset
+	navigation_agent.target_position = target_position
 
 #func _physics_process(delta):
 func _process_wander_state(delta):
@@ -183,6 +194,23 @@ func _process_wander_state(delta):
 		#set_movement_target(proto_controller.global_position)
 	#else:
 		#push_error("ProtoController not found")
+
+func _process_flee_state(delta):
+	movement_speed = flee_movement_speed
+	var current_agent_position: Vector3 = global_position
+	if navigation_agent.is_navigation_finished():
+		_start_wandering()
+	
+	var next_path_position: Vector3 = navigation_agent.get_next_path_position()
+	_navigate_to(delta, next_path_position)
+	#print("wander")
+	#animation_player.play("Walking_A")
+	if not is_on_floor():
+		animation_player.play("Jump_Full_Long")
+	elif velocity.length_squared() > 0.1:
+		animation_player.play("Running_A")
+	else:
+		animation_player.play("Idle")
 
 func _handle_obstacle_collision():
 	# try to jump

@@ -114,15 +114,18 @@ int AIOrchestrator::next_enemy_state(int prev_state, float dist_to_player, float
     float p_spell = 0.0f;
     float p_flee = 0.0f;
 
-    if (hp < 50) {
+    if (prev_state == FLEE) {
+        return FLEE;
+    }
+    // trait == 1 has ability to flee
+    if (trait == 1 && hp < 50) {
         p_flee = 1.0f;
-        p_charge = 0.0f + (ranged_ratio * 0.1f); // Increase chance of charge if player uses ranged attacks
-        p_spell = 0.3f + (melee_ratio * 0.3f);   // Default attack, slightly more likely if player uses melee
-    } else if (hp < 25) {
+        // p_charge = 0.0f + (ranged_ratio * 0.1f); // Increase chance of charge if player uses ranged attacks
+        // p_spell = 0.3f + (melee_ratio * 0.3f);   // Default attack, slightly more likely if player uses melee
+    } else if (trait == 1 && hp < 25) {
         p_flee = 1.0f;
     } else if (dist_to_player > chase_range) {
-        p_wander = 0.45f;
-        p_chase = 0.05f;
+        p_wander = 1.0f;
     } else if (dist_to_player < attack_range) {
         p_charge = 0.0f + (ranged_ratio * 0.4f); // Increase chance of charge if player uses ranged attacks
         p_spell = 0.3f + (melee_ratio * 0.3f);   // Default attack, slightly more likely if player uses melee
