@@ -21,7 +21,8 @@ extends CharacterBody3D
 @export var projectile_scene: PackedScene = preload("res://scenes/mage_projectile.tscn")
 @export var projectile_speed: float = 8.0
 @export var projectile_damage: float = 15.0
-@export var attack_cooldown: float = 2.0  # Time between attacks
+@export var charge_cooldown: float = 0.5
+@export var attack_cooldown: float = 1.5  # Time between attacks
 @export var projectile_color: Color = Color(0.5, 0.2, 0.8, 0.8)  # Default purple color
 
 # Drop variables
@@ -41,7 +42,8 @@ var target_position = Vector3.ZERO
 var spawn_position = Vector3.ZERO
 var health_bar
 var wander_timer: Timer
-var attack_timer: Timer
+var attack_reset_timer: Timer
+var attack_charge_timer: Timer
 var rng = RandomNumberGenerator.new()
 var animation_player: AnimationPlayer
 var damaged_timer: float = 0.0
@@ -92,10 +94,14 @@ func _ready():
 	_start_wandering()
 	
 	# Create attack timer
-	attack_timer = Timer.new()
-	attack_timer.one_shot = true
-	add_child(attack_timer)
-	attack_timer.timeout.connect(_on_attack_timer_timeout)
+	attack_charge_timer = Timer.new()
+	attack_charge_timer.one_shot = true
+	add_child(attack_charge_timer)
+	attack_charge_timer.timeout.connect(_on_attack_charge_timer_timeout)
+	attack_reset_timer = Timer.new()
+	attack_reset_timer.one_shot = true
+	add_child(attack_reset_timer)
+	attack_reset_timer.timeout.connect(_on_attack_reset_timer_timeout)
 		
 	# Print debug message to confirm the enemy is loaded
 	print("Enemy initialized: " + name + " at position " + str(global_position))
@@ -250,24 +256,13 @@ func _start_wandering():
 	var random_z = rng.randf_range(-wander_radius, wander_radius)
 	target_position = spawn_position + Vector3(random_x, 0, random_z)
 	
-	print(name + " wandering to position: " + str(target_position))
+	#print(name + " wandering to position: " + str(target_position))
 
 func _on_wander_timer_timeout():
 	if current_state == State.IDLE:
 		_start_wandering()
 
-func _attack_player():
-	if not can_attack or not player:
-		return
-	
-	# Start attack cooldown
-	can_attack = false
-	attack_timer.wait_time = attack_cooldown
-	attack_timer.start()
-	
-	# Play attack animation
-	play_animation("attack")
-	
+func _shoot_player():
 	# Create projectile
 	var projectile = projectile_scene.instantiate()
 	get_tree().current_scene.add_child(projectile)
@@ -297,7 +292,27 @@ func _attack_player():
 	
 	print(name + " shoots magic ball at player")
 
-func _on_attack_timer_timeout():
+func _attack_player():
+	if not can_attack or not player:
+		return
+	
+	# Start attack cooldown
+	can_attack = false
+	attack_charge_timer.wait_time = charge_cooldown
+	attack_charge_timer.start()
+	
+	# Play attack animation
+	play_animation("attack")
+	
+	#_shoot_player()
+
+func _on_attack_charge_timer_timeout():
+	_shoot_player()
+	attack_reset_timer.wait_time = attack_cooldown
+	attack_reset_timer.start()
+
+func _on_attack_reset_timer_timeout():
+	#_shoot_player()
 	can_attack = true
 
 # Get current health for damage calculation

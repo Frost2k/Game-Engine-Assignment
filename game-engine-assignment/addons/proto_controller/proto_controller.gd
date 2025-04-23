@@ -250,7 +250,7 @@ func pick_up_item(item: Node):
 	else:
 		file_name = item.name.to_lower().strip_edges()
 
-	print("Trying to pick up: '" + file_name + "'")
+	#print("Trying to pick up: '" + file_name + "'")
 
 	if item_database.has(file_name):
 		var item_data = item_database[file_name]
@@ -735,5 +735,5 @@ func melee_attack():
 		await get_tree().create_timer(melee_cooldown).timeout
 		can_melee = true
 	
-	print("Player performed melee attack!")
+	#print("Player performed melee attack!")
 	
