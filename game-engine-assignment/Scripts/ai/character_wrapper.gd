@@ -160,7 +160,7 @@ func _process_wander_state(delta):
 	
 	var next_path_position: Vector3 = navigation_agent.get_next_path_position()
 	_navigate_to(delta, next_path_position)
-	print("wander")
+	#print("wander")
 	#animation_player.play("Walking_A")
 	if not is_on_floor():
 		animation_player.play("Jump_Full_Long")
@@ -182,4 +182,9 @@ func _process_wander_state(delta):
 		#set_movement_target(proto_controller.global_position)
 	#else:
 		#push_error("ProtoController not found")
+
+func _handle_obstacle_collision():
+	# try to jump
+	pass
+
 	

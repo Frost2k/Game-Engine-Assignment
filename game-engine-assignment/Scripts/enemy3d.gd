@@ -48,6 +48,7 @@ var damaged_timer: float = 0.0
 var hit_effect_scene: PackedScene
 var hit_sounds: Array = []
 var is_dead: bool = false
+var knockback_impulse = Vector3.ZERO
 
 # Called when the node enters the scene tree for the first time
 func _ready():
@@ -151,13 +152,15 @@ func _physics_process(delta):
 				current_state = State.ATTACK
 				print(name + " is now attacking player")
 				play_animation("attack_charge")
+				
+				# Stop movement when attacking
+				velocity = Vector3.ZERO
 			
 			# Face the player with fixed orientation
 			look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
 			#rotate_y(PI)  # Rotate 180 degrees to fix model orientation
 			
-			# Stop movement when attacking
-			velocity = Vector3.ZERO
+			
 			
 			# Attack if possible
 			if can_attack:
@@ -177,8 +180,13 @@ func _physics_process(delta):
 		
 		_process_wander_state(delta)
 	
+	# gravity
 	if not is_on_floor():
 		velocity.y += (get_gravity().y * delta)
+	
+	# knockback
+	velocity += knockback_impulse
+	knockback_impulse = Vector3.ZERO
 	
 	
 	move_and_slide()
@@ -808,7 +816,7 @@ func spawn_gem():
 		
 		# Add the gem to the main scene
 		main_scene.add_child(gem)
-		print("Gem added to scene tree")
+		#print("Gem added to scene tree")
 		
 		# Set position after adding to scene
 		gem.global_position = spawn_position
@@ -866,7 +874,7 @@ func create_gem_spawn_particles(position):
 
 func _handle_obstacle_collision():
 	# Debug message
-	print(name + " hit an obstacle, changing direction")
+	#print(name + " hit an obstacle, changing direction")
 	
 	# Play a brief reaction animation if available
 	play_animation("hit")
@@ -915,3 +923,9 @@ func _handle_obstacle_collision():
 		# Add a small delay before moving again
 		velocity = Vector3.ZERO
 		await get_tree().create_timer(0.5).timeout 
+
+func apply_knockback(vec):
+	print("getting knocked back!")
+	knockback_impulse += vec
+	#move_and_slide()
+	
