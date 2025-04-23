@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://dsyg5l0uv7q1f"]
+
+[ext_resource type="Texture2D" uid="uid://b34sqx6ln5its" path="res://assets/Rocks and Gems/21.png" id="1_od7kh"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2pikl"]
+
+[node name="FloatingItem" type="FloatingItem"]
+position = Vector2(0, -3.2223)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_od7kh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_2pikl")

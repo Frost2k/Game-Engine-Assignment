@@ -1,8 +1,18 @@
 #include "register_types.h"
 
+#include "gdexample.h"
 #include "keyinput.h"
 #include "modifyspeed.h"
 #include "automover.h"
+#include "floating_item.h"
+#include "enhanced_input_handling.h"
+#include "debug_visualizer.h"
+#include "custom_surface.h"
+#include "magnetic_orbit.h"
+#include "outline_controller_3d.h"
+#include "minimap3d.h"
+#include "ai_orchestrator.h"
+
 
 #include "gdexample.h"
 
@@ -21,6 +31,15 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
     GDREGISTER_CLASS(KeyInput);
 	GDREGISTER_CLASS(ModifySpeed);
 	GDREGISTER_CLASS(AutoMover);
+	GDREGISTER_CLASS(FloatingItem);
+	GDREGISTER_CLASS(EnhancedInputHandling);
+	GDREGISTER_CLASS(DebugVisualizer);
+	GDREGISTER_CLASS(CustomSurface);
+	GDREGISTER_CLASS(MagneticOrbit);
+	GDREGISTER_CLASS(OutlineController3D);
+	GDREGISTER_CLASS(MiniMap3D);
+	GDREGISTER_CLASS(AIOrchestrator);
+
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

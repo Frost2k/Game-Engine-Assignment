@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://ceo3n07r1dndc"]
+
+[ext_resource type="Texture2D" uid="uid://c4h2nxjtg6kec" path="res://assets/Rocks and Gems/24.png" id="1_yqs8x"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ptcut"]
+radius = 2.0
+
+[node name="OrbitObject" type="RigidBody2D"]
+gravity_scale = 0.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ptcut")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.25, 0.1875)
+texture = ExtResource("1_yqs8x")
