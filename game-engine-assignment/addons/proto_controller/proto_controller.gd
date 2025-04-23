@@ -78,7 +78,7 @@ var item_database = {
 @export var melee_range = 8.0
 @export var melee_cooldown = 3.0
 @export var melee_damage = 30.0
-@export var melee_knockback = 15.0
+@export var melee_knockback = 20.0
 var can_melee = true
 
 
